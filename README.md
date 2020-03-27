@@ -1,4 +1,4 @@
-% Level 2 Autonomous Driving System - Using Carla
+# Level 2 Autonomous Driving System - Using Carla
 
 # TODO:
 - Get sensor suite up and working
