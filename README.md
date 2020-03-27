@@ -8,4 +8,4 @@ residual connections
 - Clean up codebase, etc. 
 
 # Goal:
-My final goal is to get a level 2 self-driving system up and running as soon as possible (will take some time)
+My final goal is to get a Level 2 Self-Driving System up and running as soon as possible (will take some time)
