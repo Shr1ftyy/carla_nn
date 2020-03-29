@@ -46,7 +46,6 @@ class CarEnv:
 
 		self.vehicle_bp = self.blueprint_library.filter("vehicle.tesla.model3")[0]
 		self.vehicle = self.world.spawn_actor(self.vehicle_bp, self.spawn_point)
-		self.vehicle.set_autopilot(enabled=True)
 		self.vehicle_list.append(self.vehicle)
 
 		#SENSOR INIT
@@ -55,8 +54,8 @@ class CarEnv:
 		self.rgb_cam.set_attribute("image_size_x", f"{self.im_width}")
 		self.rgb_cam.set_attribute("image_size_y", f"{self.im_height}")
 		self.rgb_cam.set_attribute("fov", f"110")
-		
-                #RADAR TO BE IMPLEMENTED FOR SEMANTIC SEGMENTATION AND POINT CLOUD IN THE FUTURE
+
+		#RADAR TO BE IMPLEMENTED FOR SEMANTIC SEGMENTATION AND POINT CLOUD IN THE FUTURE
 		self.radar = self.blueprint_library.find('sensor.other.radar')
 		self.radar.set_attribute("sensor_tick", f'{TICKRATE}')
 		self.radar.set_attribute("horizontal_fov", f'110')
@@ -70,17 +69,19 @@ class CarEnv:
 		self.backTrans = carla.Transform(carla.Location(x=-2.5, z=0.75), carla.Rotation(yaw=180))
 
 		# RADAR
-		self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
-		self.sensor_list.append(self.frontRadar)
+		# self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
+		# self.sensor_list.append(self.frontRadar)
 
 		#DEPTH
 
 		#BGRA CAMERAS
 		self.frontCam = self.world.spawn_actor(self.rgb_cam, self.frontTrans, attach_to=self.vehicle_list[0])
 		self.sensor_list.append(self.frontCam)
-		self.leftCam = self.world.spawn_actor(self.rgb_cam, self.leftTrans, attach_to=self.vehicle_list[0])
-		self.sensor_list.append(self.leftCam)
-		self.rightCam = self.world.spawn_actor(self.rgb_cam, self.rightTrans, attach_to=self.vehicle_list[0])
-		self.sensor_list.append(self.rightCam)
-		self.backCam = self.world.spawn_actor(self.rgb_cam, self.backTrans, attach_to=self.vehicle_list[0])
-		self.sensor_list.append(self.backCam)
+		# For now, we'll only use the front camera for input :D
+
+		# self.leftCam = self.world.spawn_actor(self.rgb_cam, self.leftTrans, attach_to=self.vehicle_list[0])
+		# self.sensor_list.append(self.leftCam)
+		# self.rightCam = self.world.spawn_actor(self.rgb_cam, self.rightTrans, attach_to=self.vehicle_list[0])
+		# self.sensor_list.append(self.rightCam)
+		# self.backCam = self.world.spawn_actor(self.rgb_cam, self.backTrans, attach_to=self.vehicle_list[0])
+		# self.sensor_list.append(self.backCam)
