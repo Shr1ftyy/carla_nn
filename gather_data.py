@@ -1,4 +1,8 @@
 from car_env import CarEnv
+import sys
+import glob 
+import numpy as np 
+import os
 
 try:
 		sys.path.append(glob.glob('../PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
@@ -14,4 +18,27 @@ from carla import *
 import random
 import time
 
-print(CarEnv.sensor_list)
+car_env = CarEnv()
+car = car_env.vehicle_list[0]
+
+#Activate autopilot (built-in carla function)
+car.set_autopilot(enabled=True)
+
+
+# Get controls applied by autopilot
+while True:
+    try:
+        os.system('cls')
+    except:
+        os.system('clear')
+
+    controls = car.get_control()
+
+    print(controls)
+    print(f"""
+            Throttle: {controls.throttle}
+            Steering: {controls.steer}
+            Brake: {controls.brake}
+
+            """)
+    time.sleep(0.2)
