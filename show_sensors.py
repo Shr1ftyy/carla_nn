@@ -148,7 +148,6 @@ while run == True:
 
 	time.sleep(0.2)
 	showCameras()
-	win.fill((0,0,0))
 	pygame.display.update()
 
 
