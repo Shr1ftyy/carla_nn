@@ -77,7 +77,7 @@ class CarEnv:
 		#BGRA CAMERAS
 		self.frontCam = self.world.spawn_actor(self.rgb_cam, self.frontTrans, attach_to=self.vehicle_list[0])
 		self.sensor_list.append(self.frontCam)
-		# For now, we'll only use the front camera for input :D
+		# >>>>>> For now, we'll only use the front camera for input :D
 
 		# self.leftCam = self.world.spawn_actor(self.rgb_cam, self.leftTrans, attach_to=self.vehicle_list[0])
 		# self.sensor_list.append(self.leftCam)
