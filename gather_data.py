@@ -24,6 +24,7 @@ car = car_env.vehicle_list[0]
 #Activate autopilot (built-in carla function)
 car.set_autopilot(enabled=True)
 
+#Functions for gathering data from the car
 
 # Get controls applied by autopilot
 while True:
@@ -41,4 +42,3 @@ while True:
             Brake: {controls.brake}
 
             """)
-    time.sleep(0.2)
