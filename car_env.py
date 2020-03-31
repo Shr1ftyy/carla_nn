@@ -25,12 +25,12 @@ TICKRATE = 1/FPS # --> sets sensor tickrate
 
 
 class CarEnv:
-	def __init__(self):
+	def __init__(self, port=2000):
 		self.im_width = IMG_WIDTH
 		self.im_height = IMG_HEIGHT
 		self.vehicle_list = [] # --> Vehicle List
 		self.sensor_list = [] # --> Sensor List
-		self.client = carla.Client('localhost', PORT)
+		self.client = carla.Client('localhost', self.port)
 		self.client.set_timeout(10)
 		self.world = self.client.get_world()
 		# self.settings = self.world.get_settings()
