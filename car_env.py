@@ -20,8 +20,7 @@ import time
 IMG_WIDTH = 640
 IMG_HEIGHT = 480
 FPS = 30 # --> sets maximum FPS for sensor inputs
-TICKRATE = 1/FPS # --> sets sensor tickrate 
-
+TICKRATE = 1/FPS # --> sets sensor tickrate
 
 class CarEnv:
 	def __init__(self, port=2000):
