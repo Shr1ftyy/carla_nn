@@ -1,9 +1,6 @@
 import glob
-import math
-import cv2
 import os
 import sys
-import numpy as np
 
 try:
 		sys.path.append(glob.glob('../PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
