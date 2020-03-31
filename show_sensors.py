@@ -66,7 +66,6 @@ for actor in actor_list:
 
 exit()
 
-frontCam.listen(lambda image: processImage(image))
 
 print("SENSOR INIT DONE")                       
 

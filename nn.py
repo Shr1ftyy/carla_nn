@@ -11,6 +11,16 @@ dtype = torch.float
 #device = torch.device("cpu") # Uncomment this to run on CPU
 device = torch.device("cuda:0") 
 
+def read_img(img_list, img):
+    n = cv2.imread(img, 0)
+    img_list.append(n)
+    return img_list
+
+path = glob.glob("*.bmp") #or jpg
+list_ = []`
+
+x_train = [read_img(list_, img) for img in path]
+
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
