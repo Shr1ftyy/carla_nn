@@ -17,7 +17,6 @@ import random
 import time
 
 #CONSTANTS
-PORT = 2069
 IMG_WIDTH = 640
 IMG_HEIGHT = 480
 FPS = 30 # --> sets maximum FPS for sensor inputs
@@ -26,8 +25,9 @@ TICKRATE = 1/FPS # --> sets sensor tickrate
 
 class CarEnv:
 	def __init__(self, port=2000):
+                self.port = port
 		self.im_width = IMG_WIDTH
-		self.im_height = IMG_HEIGHT
+                self.im_height = IMG_HEIGHT
 		self.vehicle_list = [] # --> Vehicle List
 		self.sensor_list = [] # --> Sensor List
 		self.client = carla.Client('localhost', self.port)
