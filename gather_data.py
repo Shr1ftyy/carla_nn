@@ -27,39 +27,51 @@ sensors = car_env.sensor_list
 im_width = car_env.im_width
 im_height = car_env.im_height
 CAMERA_MEM = [None]
+timestamp = 0
+DIRECTORY = 'data\\'
+IMG_DIR = f"images/{timestamp}.png"
 
 #Activate autopilot (built-in carla function)
 car.set_autopilot(enabled=True)
 
 #Functions for gathering data from the car
-#Get controls and imagergy via threading
+#Get controls and imagery via threading
 
 def processImage(data, sensorID):
 	i = np.array(data.raw_data)
 	i2 = np.reshape(i, (im_height, im_width, 4))
 	i3 = i2[:, :, :3]
 	CAMERA_MEM[sensorID] = i3
+	timestamp += 1 
 
 
 def gather_data():
     controls = car.get_control()
     throttle = controls.throttle
+    brake  = controls.brake
     steer = controls.steer
-    brake = controls.brake
+    try:
+	    cv2.imwrite(IMG_DIR, CAMERA_MEM[0])
+    except:
+    	pass
    # v = car.get_velocity()
    # kmh = int(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
 
-    return f"{CAMERA_MEM[0]},{throttle},{steer},{brake}"
+    return f"{throttle},{steer},{brake}"
 
 # Get controls applied by autopilot
 
 
 def main():
-    sensor[0].listen(lambda data: processImage(data, 0))
+    sensors[0].listen(lambda image: processImage(image, 0))
 
-    if not os.exists.exists("data/"):
-        os.mkdir("data/")
-    data = open('')
+    if not os.path.exists(DIRECTORY):
+        os.mkdir(DIRECTORY)
+        print('made dir')
+
+    data = open(f"{DIRECTORY}controls.txt", "w")
+    print('initializing sensors')
+    time.sleep(5)
 
     try:
         while True:
@@ -77,11 +89,14 @@ def main():
                     Brake: {controls.brake}
 
                     """)
-            gather_data()
+            data.write(f'{gather_data()}\n')
     except (KeyboardInterrupt, SystemExit):
         data.close()
         car.destroy()
+        for sensor in sensors:
+        	sensor.destroy()
         sys.exit()
+        exit()
         raise
 
 
