@@ -57,7 +57,11 @@ world = client.get_world()
 actor_list = world.get_actors()
 
 for actor in actor_list:
-     if actor.attributes['role_name'] == 'frontCam':
+     if actor.type  == 'sensor.camera.rgb': 
+        if not actor.is_listening:
+            actor.listen(lambda raw: processImage(raw))
+
+
          frontCam = actor
          print('found front camera!')
      else:

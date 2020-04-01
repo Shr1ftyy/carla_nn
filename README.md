@@ -1,5 +1,8 @@
 # Level 2 Autonomous Driving System - Using Carla
 
+# Next Update:
+- Multi-camera input and data collation
+
 # TODO:
 - Get sensor suite up and working
 - Research on different ANN Architecture to use - currently thinking of using a VAE and Inception CNN with 

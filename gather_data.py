@@ -8,12 +8,12 @@ import os
 #import pygame
 
 try:
-		sys.path.append(glob.glob('../PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
-				sys.version_info.major, 
-				sys.version_info.minor,
-				'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+        sys.path.append(glob.glob('../PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
+                sys.version_info.major, 
+                sys.version_info.minor,
+                'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
-		print("Failed to find carla's .egg directory")
+        print("Failed to find carla's .egg directory")
 
 import carla
 from carla import *
@@ -29,72 +29,72 @@ im_height = car_env.im_height
 CAMERA_MEM = [None]
 timestamp = 0
 DIRECTORY = 'data\\'
-IMG_DIR = f"images/{timestamp}.png"
-
-#Activate autopilot (built-in carla function)
-car.set_autopilot(enabled=True)
-
-#Functions for gathering data from the car
-#Get controls and imagery via threading
-
-def processImage(data, sensorID):
-	i = np.array(data.raw_data)
-	i2 = np.reshape(i, (im_height, im_width, 4))
-	i3 = i2[:, :, :3]
-	CAMERA_MEM[sensorID] = i3
-	timestamp += 1 
+IMG_DIR = None
 
 
+# Prints controls into console
+def showLogs():
+    controls = car.get_control()   
+
+    print(controls)
+    print(f"""Throttle:{controls.throttle},Steering:{controls.steer}, Brake:{controls.brake}""")
+
+# Places image into memory (list)
+def setmem(data):
+    CAMERA_MEM[0] = data
+
+
+# Gathers steering, brake, throttle, current camera feed, and saves
 def gather_data():
+    global timestamp
     controls = car.get_control()
     throttle = controls.throttle
     brake  = controls.brake
     steer = controls.steer
+    IMG_DIR = f"{DIRECTORY}testing\\{timestamp}.png"
+    timestamp += 1
     try:
-	    cv2.imwrite(IMG_DIR, CAMERA_MEM[0])
+        CAMERA_MEM[0].save_to_disk(IMG_DIR)
+        print(IMG_DIR)
     except:
-    	pass
+        pass
    # v = car.get_velocity()
    # kmh = int(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
 
     return f"{throttle},{steer},{brake}"
 
-# Get controls applied by autopilot
 
-
+# Main function
 def main():
-    sensors[0].listen(lambda image: processImage(image, 0))
+    global data
+    for i in range(0, len(sensors)): 
+        if sensors[i].type_id == 'sensor.camera.rgb': 
+            sensors[i].listen(lambda image: setmem(image))
+        else:
+            print('Failed')
+            car.destroy()
+            sensors[:].destroy()
+            exit()
 
     if not os.path.exists(DIRECTORY):
         os.mkdir(DIRECTORY)
         print('made dir')
 
-    data = open(f"{DIRECTORY}controls.txt", "w")
+    data = open(f"{DIRECTORY}testing.txt", "w")
     print('initializing sensors')
     time.sleep(5)
 
+    #Activates autopilot -> Data is collected while autopilot is running 
+    car.set_autopilot(enabled=True)
+
     try:
         while True:
-            try:
-                os.system('cls')
-            except:
-                os.system('clear')
-
-            controls = car.get_control()
-
-            print(controls)
-            print(f"""
-                    Throttle: {controls.throttle}
-                    Steering: {controls.steer}
-                    Brake: {controls.brake}
-
-                    """)
+            showLogs()
             data.write(f'{gather_data()}\n')
     except (KeyboardInterrupt, SystemExit):
         data.close()
         car.destroy()
-        for sensor in sensors:
-        	sensor.destroy()
+        sensors[:].destroy()
         sys.exit()
         exit()
         raise
