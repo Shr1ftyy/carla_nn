@@ -3,7 +3,7 @@ import sys
 import glob 
 import numpy as np 
 import os
-from PIL import Image 
+import cv2
 #import pygame
 
 try:
@@ -54,22 +54,21 @@ def gather_data():
 	steer = controls.steer
 	IMG_DIR = f"{DIRECTORY}images\\{timestamp}.png"
 
-	stitch = np.concatenate(CAMERA_MEM[:])
-	im = Image.fromarray(stitch)
-	im.save(f"{timestamp}.png")
-	print(IMG_DIR)
-	#try:
-	#except:
-	#	 pass
+	try:
+        for j in range(0, len(sensors)):
+            stitch = np.concatenate(CAMERA_MEM[:])
+            
+            
+            print(IMG_DIR)
+	except:
+        pass
+
 	timestamp += 1
-	# v = car.get_velocity()
-	# kmh = int(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
 
 	return f"{throttle},{steer},{brake}"
 
 
 # Main function
-def main():
 	global data
 	print('initializing memory')
 	for _ in sensors:
