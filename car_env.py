@@ -79,4 +79,3 @@ class CarEnv:
 		self.sensor_list.append(self.rightCam)
 		self.backCam = self.world.spawn_actor(self.rgb_cam, self.backTrans, attach_to=self.vehicle_list[0])
 		self.sensor_list.append(self.backCam)
-		print(len(self.sensor_list))
