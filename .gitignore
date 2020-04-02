@@ -1,6 +1,6 @@
 #Ignore the following files:
-./testing
+./testing*
 __pycache__
 *.bak
-./data
+./data/*
 
