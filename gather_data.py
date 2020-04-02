@@ -28,7 +28,7 @@ im_height = car_env.im_height
 CAMERA_MEM = []
 timestamp = 0
 DIRECTORY = 'data\\'
-IMG_DIR = f"{DIRECTORY}images\\"
+IMG_DIR = f"{DIRECTORY}test\\"
 
 
 # Prints controls into console
@@ -84,7 +84,7 @@ def main():
         os.mkdir(IMG_DIR)
         print('made img dir')
 
-    data = open(f"{DIRECTORY}controls.txt", "w")
+    data = open(f"{DIRECTORY}test.txt", "w")
     print('initializing sensors')
     time.sleep(5)
 
@@ -92,9 +92,16 @@ def main():
     car.set_autopilot(enabled=True)
 
     try:
-        while True:
+        while timestamp < 2000:
             showLogs()
             data.write(f'{gather_data()}\n')
+        data.close()
+        car.destroy()
+        for sensor in sensors:
+            sensor.destroy()
+        sys.exit()
+        exit()
+        raise
     except (KeyboardInterrupt, SystemExit):
         data.close()
         car.destroy()
