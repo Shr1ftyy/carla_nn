@@ -10,7 +10,7 @@ class FastSlam(object):
         pass
     def paint(image):
         # Initiate FAST object with default values
-        fast = cv.ORB_create(1000)
+        fast = cv.ORB_create(3000)
         # Disable nonmaxSuppression
         #fast.setNonmaxSuppression(0)
         kp = fast.detect(image,None)

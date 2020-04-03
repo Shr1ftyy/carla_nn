@@ -4,6 +4,7 @@ import os
 import time
 import argparse
 from slam import FastSlam
+import utils
 
 parser = argparse.ArgumentParser(description='plays images from a selected directory')
 parser.add_argument('directory', metavar='directory', type=str, nargs='?', help='directory to parse images from')
@@ -12,17 +13,9 @@ parser.add_argument('slam', metavar='slam', type=str, nargs='?', help='insert ye
 args = parser.parse_args()
 _dir = args.directory 
 files = os.listdir(_dir)
-convFiles = []
-WAITKEY = 1000
+convFiles = utils.imgsort(files) 
+WAITKEY = 100
 SCL_FACTOR = 2
-
-for i in range(0, len(files)):
-    convFiles.append(int(files[i].split('.')[0]))
-
-convFiles.sort(reverse=False)
-
-for num in range(0, len(convFiles)):
-    convFiles[num] = str(convFiles[num])
 
 print(convFiles)
 

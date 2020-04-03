@@ -15,6 +15,7 @@ files = os.listdir(_dir)
 convFiles = []
 WAITKEY = 100
 SCL_FACTOR = 2
+WINDOW = 'live_feed'
 
 for i in range(0, len(files)):
     convFiles.append(int(files[i].split('.')[0]))
@@ -42,7 +43,7 @@ if args.slam.lower() == 'yes':
             slamImg.append(FastSlam.paint(image))
 
         img = np.concatenate(slamImg[:])
-        cv2.imshow(f'preview', img)
+        cv2.imshow(WINDOW, img)
         cv2.waitKey(WAITKEY)
 
 else:
@@ -52,7 +53,7 @@ else:
         print(f'frame:{d}')
         img = cv2.imread(f'{d}.png', -1)  
         img = cv2.resize(img, (int(np.shape(img)[1]/SCL_FACTOR),int(np.shape(img)[0]/SCL_FACTOR))) 
-        cv2.imshow(f'preview', img)
+        cv2.imshow(WINDOW, img)
         cv2.waitKey(WAITKEY)
 
 
