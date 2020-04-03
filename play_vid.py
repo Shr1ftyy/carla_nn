@@ -2,11 +2,19 @@ import cv2
 import numpy as np 
 import os
 import time
+import argparse
 from slam import FastSlam
 
-_dir = "./data/test"
+parser = argparse.ArgumentParser(description='plays images from a selected directory')
+parser.add_argument('directory', metavar='directory', type=str, nargs='?', help='directory to parse images from')
+parser.add_argument('slam', metavar='slam', type=str, nargs='?', help='insert yes slam, no for normal playback')
+
+args = parser.parse_args()
+_dir = args.directory 
 files = os.listdir(_dir)
 convFiles = []
+WAITKEY = 33
+SCL_FACTOR = 2
 
 for i in range(0, len(files)):
     convFiles.append(int(files[i].split('.')[0]))
@@ -19,12 +27,29 @@ for num in range(0, len(convFiles)):
 print(convFiles)
 
 os.chdir(_dir)
-for d in convFiles:
-    print(f'frame:{d}')
-    img = cv2.imread(f'{d}.png', -1)  
-    img = imS = cv2.resize(img, (int(np.shape(img)[1]/2),int(np.shape(img)[0]/2))) 
-    cv2.imshow(f'preview', FastSlam.paint(image=img))
 
-    cv2.waitKey(33)
+if args.slam.lower() == 'yes':
+    for d in convFiles:
+        print(f'frame:{d}')
+        img = cv2.imread(f'{d}.png', -1)
+        img = cv2.resize(img, (int(np.shape(img)[1]),int(np.shape(img)[0]))) 
+        slamImg = []
+        imgSplit = np.split(img,4)
+
+        for image in imgSplit:
+            slamImg.append(FastSlam.paint(image))
+
+        img = np.concatenate(slamImg[:])
+        cv2.imshow(f'preview', img)
+        cv2.waitKey(WAITKEY)
+
+else:
+    for d in convFiles:
+        print(f'frame:{d}')
+        img = cv2.imread(f'{d}.png', -1)  
+        img = cv2.resize(img, (int(np.shape(img)[1]/SCL_FACTOR),int(np.shape(img)[0]/SCL_FACTOR))) 
+        cv2.imshow(f'preview', img)
+        cv2.waitKey(WAITKEY)
+
 
 exit()

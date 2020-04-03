@@ -64,9 +64,6 @@ class CarEnv:
 		self.rightTrans = carla.Transform(carla.Location(x=2.5, y=1, z=0.75), carla.Rotation(yaw=90))
 		self.backTrans = carla.Transform(carla.Location(x=-2.5, z=0.75), carla.Rotation(yaw=180))
 
-		# RADAR
-		# self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
-		# self.sensor_list.append(self.frontRadar)
 
 		#DEPTH
 
@@ -79,3 +76,7 @@ class CarEnv:
 		self.sensor_list.append(self.rightCam)
 		self.backCam = self.world.spawn_actor(self.rgb_cam, self.backTrans, attach_to=self.vehicle_list[0])
 		self.sensor_list.append(self.backCam)
+    
+		# RADAR
+		self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
+		self.sensor_list.append(self.frontRadar)

@@ -4,6 +4,7 @@ import glob
 import numpy as np 
 import os
 import cv2
+import argparse
 #import pygame
 
 try:
@@ -12,13 +13,23 @@ try:
                     sys.version_info.minor,
                     'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
-    print("Failed to find carla's .egg directory")
+    print("Failed to find carla's .egg TXT_DIR")
 
 import carla
 from carla import *
 
 import random
 import time
+
+parser = argparse.ArgumentParser(description='plays images from a selected TXT_DIR')
+parser.add_argument('img_dir', metavar='img_dir', type=str, nargs='?', help='directory to store image data')
+parser.add_argument('txt_dir', metavar='txt_dir', type=str, nargs='?', help='directory to store controls data')
+parser.add_argument('txt_name', metavar='txt_name', type=str, nargs='?', help='name of text file to store controls data')
+args = parser.parse_args()
+
+IMG_DIR = args.img_dir
+TXT_DIR = args.txt_dir
+TXT_NAME = args.txt_name
 
 car_env = CarEnv(port=2069)
 car = car_env.vehicle_list[0]
@@ -27,8 +38,6 @@ im_width = car_env.im_width
 im_height = car_env.im_height
 CAMERA_MEM = []
 timestamp = 0
-DIRECTORY = 'data\\'
-IMG_DIR = f"{DIRECTORY}test\\"
 
 
 # Prints controls into console
@@ -76,15 +85,15 @@ def main():
     sensors[2].listen(lambda image: processimg(image, 2))
     sensors[3].listen(lambda image: processimg(image, 3))
 
-    if not os.path.exists(DIRECTORY):
-        os.mkdir(DIRECTORY)
+    if not os.path.exists():
+        os.mkdir(TXT_DIR)
         print('made dir')
 
     if not os.path.exists(IMG_DIR):
         os.mkdir(IMG_DIR)
         print('made img dir')
 
-    data = open(f"{DIRECTORY}test.txt", "w")
+    data = open(f"{TXT_DIR}{TXT_NAME}", "w")
     print('initializing sensors')
     time.sleep(5)
 
