@@ -78,5 +78,5 @@ class CarEnv:
 		self.sensor_list.append(self.backCam)
     
 		# RADAR
-		self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
-		self.sensor_list.append(self.frontRadar)
+		#self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
+		#self.sensor_list.append(self.frontRadar)

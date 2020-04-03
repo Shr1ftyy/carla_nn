@@ -13,7 +13,7 @@ args = parser.parse_args()
 _dir = args.directory 
 files = os.listdir(_dir)
 convFiles = []
-WAITKEY = 1000
+WAITKEY = 100
 SCL_FACTOR = 2
 
 for i in range(0, len(files)):
@@ -29,7 +29,9 @@ print(convFiles)
 os.chdir(_dir)
 
 if args.slam.lower() == 'yes':
-    for d in convFiles:
+    while True:
+        d = len(os.listdir('.'))
+        d -= 2
         print(f'frame:{d}')
         img = cv2.imread(f'{d}.png', -1)
         img = cv2.resize(img, (int(np.shape(img)[1]),int(np.shape(img)[0]))) 
@@ -44,7 +46,9 @@ if args.slam.lower() == 'yes':
         cv2.waitKey(WAITKEY)
 
 else:
-    for d in convFiles:
+    while True:
+        d = len(os.listdir('.'))
+        d -= 2
         print(f'frame:{d}')
         img = cv2.imread(f'{d}.png', -1)  
         img = cv2.resize(img, (int(np.shape(img)[1]/SCL_FACTOR),int(np.shape(img)[0]/SCL_FACTOR))) 

@@ -85,7 +85,7 @@ def main():
     sensors[2].listen(lambda image: processimg(image, 2))
     sensors[3].listen(lambda image: processimg(image, 3))
 
-    if not os.path.exists():
+    if not os.path.exists(TXT_DIR):
         os.mkdir(TXT_DIR)
         print('made dir')
 
@@ -101,7 +101,7 @@ def main():
     car.set_autopilot(enabled=True)
 
     try:
-        while timestamp < 2000:
+        while timestamp < 6000:
             showLogs()
             data.write(f'{gather_data()}\n')
         data.close()
