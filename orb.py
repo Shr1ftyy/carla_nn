@@ -13,7 +13,7 @@ class FastSlam(object):
         fast = cv.ORB_create(3000)
         # Disable nonmaxSuppression
         #fast.setNonmaxSuppression(0)
-        kp = fast.detect(image,None)
+        kp= fast.detect(image,None)
         #print( "Total Keypoints without nonmaxSuppression: {}".format(len(kp)) )
         img3 = (cv.drawKeypoints(image, kp, None, color=(0,255,0)))
         img3 = cv.resize(img3, (int(np.shape(img3)[1]/SCL_FACTOR),int(np.shape(img3)[0]/SCL_FACTOR))) 

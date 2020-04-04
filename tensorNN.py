@@ -47,7 +47,7 @@ controls = np.array(controls)
 print(np.shape(images[0]))
 
 model = Sequential()
-model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(1, 32, None)))
+model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(4, 480, 680)))
 model.add(Reshape((512, -1)))
 model.add(Permute((2, 1)))
 model.add(LSTM(32))

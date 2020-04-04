@@ -3,7 +3,7 @@ import numpy as np
 import os
 import time
 import argparse
-from slam import FastSlam
+from orb import FastSlam
 import utils
 
 parser = argparse.ArgumentParser(description='plays images from a selected directory')
