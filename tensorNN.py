@@ -5,8 +5,8 @@ import utils
 import argparse
 import cv2
 #import tensorflow as tf
-#from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
-#from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
+from tensorflow.keras.models import Sequential, load_model
 #from sklearn.preprocessing import MinMaxScaler
 #from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 
@@ -45,10 +45,14 @@ controls.pop()
 
 controls = np.array(controls)
 print(np.shape(images[0]))
+print(np.shape(controls))
 
 model = Sequential()
-model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(4, 480, 680)))
+model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(4, 480, 640)))
 model.add(Reshape((512, -1)))
 model.add(Permute((2, 1)))
-model.add(LSTM(32))
+model.add(CuDDNLSTM(32))
+model.add(Dropout(0.2))
+model.add(Dense(100))
+model.add(Dense(3))
 
