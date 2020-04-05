@@ -24,6 +24,7 @@ TICKRATE = 1/FPS # --> sets sensor tickrate
 
 class CarEnv:
 	def __init__(self, port=2000):
+		self.radartick = 50
 		self.port = port
 		self.im_width = IMG_WIDTH
 		self.im_height = IMG_HEIGHT
@@ -56,8 +57,8 @@ class CarEnv:
 		self.radar.set_attribute("sensor_tick", f'{TICKRATE}')
 		self.radar.set_attribute("horizontal_fov", f'110')
 		self.radar.set_attribute("vertical_fov", f'45')
-		self.radar.set_attribute("points_per_second", f'50')
-		self.radar.set_attribute("range", f'20')
+		self.radar.set_attribute("points_per_second", f'{self.radartick}')
+		self.radar.set_attribute("range", f'100')
 
 		self.frontTrans = carla.Transform(carla.Location(x=2.5, z=0.75))
 		self.leftTrans = carla.Transform(carla.Location(x=2.5,y=-1, z=0.75), carla.Rotation(yaw=-90)) 
@@ -77,6 +78,6 @@ class CarEnv:
 		self.backCam = self.world.spawn_actor(self.rgb_cam, self.backTrans, attach_to=self.vehicle_list[0])
 		self.sensor_list.append(self.backCam)
     
-		# RADAR
-		#self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
-		#self.sensor_list.append(self.frontRadar)
+		#RADAR
+		self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
+		self.sensor_list.append(self.frontRadar)

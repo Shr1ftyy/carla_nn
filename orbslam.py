@@ -67,27 +67,3 @@ for image in convFiles:
     img = process_frame(np.split(cv2.imread(image+'.png', -1), 4)[0])
     cv2.imshow('_', img)
     cv2.waitKey(WAITKEY)
-
-#for d in range(0, len(convFiles)):
-#    _curr = d
-#    _next = d+1
-#    print(f'frame:{_curr}')
-#    orb = cv2.ORB_create(10000)
-#    img1 = np.split(cv2.imread(f'{_next}.png', -1), 4)[0]
-#    img2 = np.split(cv2.imread(f'{_curr}.png', -1), 4)[0]
-#    kp1, des1 = orb.detectAndCompute(img1,None)
-#    kp2, des2 = orb.detectAndCompute(img2,None)
-#    # create BFMatcher object
-#    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-#    # Match descriptors.
-#    matches = bf.match(des1,des2)
-#    # Sort them in the order of their distance.
-#    matches = sorted(matches, key = lambda x:x.distance)
-#    # Draw first 10 matches.
-#    for pt1, pt2 in matches:
-#        print(pt1)
-#        print(pt2)
-
-
-
-
