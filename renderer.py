@@ -4,9 +4,19 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import time
+from car_env import CarEnv
+import numpy as np
+import sys
+import math
+
+scl_pt = 1
+
+RADAR_MEM = []
 clock = pygame.time.Clock()
 
 SCL_DOT = 1
+
+detections = []
 
 vertices = (
         (-1, 0.5, 0),
@@ -41,6 +51,23 @@ for point in points:
 print(vertices)
 
 def Cube():
+
+    glEnable(GL_POINT_SMOOTH)
+    glPointSize(1.5)
+
+    glBegin(GL_POINTS)
+
+    glColor3d(1,1,1)
+
+    for point in RADAR_MEM:
+        try:
+            glVertex3d(point[0],point[1],point[2])
+        except:
+            pass
+
+
+    glEnd()
+
     glEnable(GL_POINT_SMOOTH)
     glPointSize(10)
     glBegin(GL_POINTS)
@@ -56,6 +83,27 @@ def Cube():
             glColor3d(0,1,0)
             glVertex3fv(points[point])
     glEnd()
+
+def parse_data(radar_data):
+    point = np.frombuffer(radar_data.raw_data, dtype=np.dtype('f4'))
+    if point.size != 0:
+        point = np.reshape(point, (len(radar_data), 4))[0]
+        print(np.shape(point))
+        depth = point[3]
+        y = scl_pt*((depth)*(math.cos(math.pi - ((point[1])+(math.pi/2)))))   
+        if (point[1])+(math.pi/2) < 0:
+            y = -1*y
+        xz = scl_pt*((depth)*(math.cos(abs(point[1]))))
+        x = scl_pt*((xz)*(math.cos(-1*(point[2]+(math.pi/2)))))
+        if -1*(point[2])+(math.pi/2) > math.pi/2:
+            x = -1*x
+        z = scl_pt*((xz) * (math.sin(math.pi - (-1*(point[2])+(math.pi/2)))))
+        point = np.array([x,y,z])
+        
+        RADAR_MEM.append(point)
+        print(point)
+    else:
+        RADAR_MEM.append([0,0,100])
 
 def backup():
 
@@ -85,58 +133,107 @@ def backup():
 
                 if event.button == 5:
                     glTranslatef(0,0,-1)
+
+    point = np.frombuffer(radar_data.raw_data, dtype=np.dtype('f4'))
+    if point.size != 0:
+        point = np.reshape(point, (len(radar_data), 4))[0]
+        print(np.shape(point))
+        depth = point[3]
+        y = scl_pt*((depth)*(math.cos((point[1])+(math.pi/2))))   
+        if (point[1])+(math.pi/2) < 0:
+            y = -1*y
+        x = scl_pt*((depth)*(math.sin(-1*(point[1])+(math.pi/2))*(math.cos(-1*(point[2])+(math.pi/2)))))
+        # x = scl_pt*((depth)*(math.cos(-1*(point[2])+(math.pi/2))))
+        if -1*(point[2])+(math.pi/2) > math.pi/2:
+            x = -1*x
+        z = scl_pt*(math.sqrt(-1*(x**2+y**2-depth**2)))
+        # z = scl_pt*(depth*(math.sin(-1*(point[2])+(math.pi/2))))
+        point = np.array([x,y,z])
+        
+        RADAR_MEM.append(point)
+        print(point)
+    else:
+        RADAR_MEM.append([0,0,100])
+
 def main():
-    clock.tick(60)
-    pygame.init()
-    display =  (800, 600)
-    pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    try:
+        global RADAR_MEM
+        car_env = CarEnv(port=2069)
+        car = car_env.vehicle_list[0]
+        sensors = car_env.sensor_list
+        car.set_autopilot(enabled=True)
+        HFOV = (car_env.hfov*math.pi)/180
+        VFOV = (car_env.vfov*math.pi)/180
 
-    gluPerspective(120, (display[0]/display[1]), 0.1, 50.0)
+        for sensor in sensors:
+            if sensor.type_id == 'sensor.other.radar':
+                sensor.listen(lambda data: parse_data(data))
 
-    glRotate(0, 0, 0, 0)
-    glTranslatef(0.0, 0.0, -3)
+        clock.tick(60)
+        pygame.init()
+        display =  (1280, 720)
+        pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 
-    while True:
-        events = pygame.event.get()
-        keys = pygame.key.get_pressed()
-        pressed_mouse = pygame.mouse.get_pressed()
+        gluPerspective(120, (display[0]/display[1]), 0.1, 200.0)
 
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit() 
-                exit()
+        glRotate(0, 0, 0, 0)
+        glTranslatef(0.0, 0.0, -3)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 4: # wheel rolled up
-                    glScaled(1.10, 1.10, 1.10)
-                if event.button == 5: # wheel rolled down
-                    glScaled(0.9, 0.9, 0.9)
+        while True:
+            events = pygame.event.get()
+            keys = pygame.key.get_pressed()
+            pressed_mouse = pygame.mouse.get_pressed()
 
-        if pressed_mouse[1]:
-            ms = pygame.mouse.get_rel()
-            glRotate(0.3, ms[1], ms[0], 0)
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit() 
+                    exit()
 
-        if pressed_mouse[2]:
-            ms = pygame.mouse.get_rel()
-            glTranslatef(ms[0]/100, -1 * ms[1]/100, 0)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 4: # wheel rolled up
+                        glScaled(1.10, 1.10, 1.10)
+                    if event.button == 5: # wheel rolled down
+                        glScaled(0.9, 0.9, 0.9)
 
-        if keys[pygame.K_UP]:
-            glRotate(0.1, -1, 0, 0)
-        if keys[pygame.K_DOWN]:
-            glRotate(0.1, 1, 0, 0)
-        if keys[pygame.K_LEFT]:
-            glRotate(0.1, 0, -1, 0)
-        if keys[pygame.K_RIGHT]:
-            glRotate(0.1, 0, 1, 0)
-        if keys[pygame.K_s]:
-            glTranslatef(0.0, 0.0, -1)
-        if keys[pygame.K_w]:
-            glTranslatef(0.0, 0.0, 1)
-               
+            if pressed_mouse[1]:
+                ms = pygame.mouse.get_rel()
+                glRotate(2, ms[1], ms[0], 0)
 
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        Cube()
-        pygame.display.flip()
+            if pressed_mouse[2]:
+                ms = pygame.mouse.get_rel()
+                glTranslatef(ms[0]/100, -1 * ms[1]/100, 0)
 
-main()
+            if keys[pygame.K_UP]:
+                glRotate(0.1, -1, 0, 0)
+            if keys[pygame.K_DOWN]:
+                glRotate(0.1, 1, 0, 0)
+            if keys[pygame.K_LEFT]:
+                glRotate(0.1, 0, -1, 0)
+            if keys[pygame.K_RIGHT]:
+                glRotate(0.1, 0, 1, 0)
+            if keys[pygame.K_s]:
+                glTranslatef(0.0, 0.0, -1)
+            if keys[pygame.K_w]:
+                glTranslatef(0.0, 0.0, 1)
+                   
+
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+            Cube()
+            pygame.display.flip()
+
+            if len(RADAR_MEM) >= car_env.radartick:
+                RADAR_MEM = []
+
+    except (KeyboardInterrupt, SystemExit):
+        car.destroy()
+        for sensor in sensors:
+            sensor.destroy()
+        pygame.quit()
+        sys.exit()
+        exit()
+
+if __name__ == '__main__':
+    main()
+else:
+    print('you cannot import the renderer... skipping import')
 

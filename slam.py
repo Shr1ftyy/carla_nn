@@ -5,7 +5,7 @@ import os
 
 SCL_FACTOR = 2
 
-class ORBSlam(object):
+class FastSlam(object):
     def __init__(self):
         pass
     def paint(image):
