@@ -9,6 +9,8 @@ from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
 from tensorflow.keras.models import Sequential, load_model
 #from sklearn.preprocessing import MinMaxScaler
 #from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+import matplotlib.pyplot as plt
+
 
 parser = argparse.ArgumentParser(description='plays images from a selected TXT_DIR')
 parser.add_argument('img_dir', metavar='img_dir', type=str, nargs='?', help='directory to get image data')
@@ -91,4 +93,13 @@ model.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE)
 
 predictions = model.predict(x_test)
 
+plt.plot(testControls[1], color = 'red', label = f'Real steering')
+plt.plot(predictions[1], color = 'orange', label = f'Predicted steering')
+plt.plot(testControls[0], color = 'blue', label = f'Real steering')
+plt.plot(predictions[0], color = 'purple', label = f'Predicted steering')
+plt.title(f"Steering Angle Prediction")
+plt.xlabel('Frame')
+plt.ylabel('Steering Angle')
+plt.legend()
 
+plt.show()
