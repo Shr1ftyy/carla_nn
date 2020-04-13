@@ -1,4 +1,6 @@
-cv2  
+opencv-python
 numpy
 pygame
-
+PyOpenGL
+tensorflow
+pytorch
