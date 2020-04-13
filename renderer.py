@@ -98,6 +98,7 @@ def parse_data(radar_data):
         if -1*(point[2])+(math.pi/2) > math.pi/2:
             x = -1*x
         z = scl_pt*((xz) * (math.sin(math.pi - (-1*(point[2])+(math.pi/2)))))
+
         point = np.array([x,y,z])
         
         RADAR_MEM.append(point)

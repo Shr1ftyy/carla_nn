@@ -4,11 +4,11 @@ import numpy as np
 import utils
 import argparse
 import cv2
-#import tensorflow as tf
-from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
-from tensorflow.keras.models import Sequential, load_model
-#from sklearn.preprocessing import MinMaxScaler
-#from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+# import tensorflow as tf
+# from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
+# from tensorflow.keras.models import Sequential, load_model
+# from sklearn.preprocessing import MinMaxScaler
+# from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import matplotlib.pyplot as plt
 
 
@@ -20,7 +20,7 @@ parser.add_argument('test_txt', metavar='test_txt', type=str, nargs='?', help='d
 args = parser.parse_args()
 
 IMG_DIR = args.img_dir
-TST_DIR = args.test_dir
+TST_DIR = args.test_img
 TST_TXT = args.test_txt
 TXT_DIR = args.txt_dir
 
@@ -50,11 +50,14 @@ for name in imgFolder:
 for name in testFolder:
     testNames.append(f"{name}.png")
 
+print(imageNames)
+
 for name in imageNames: 
+    print(cv2.imread(f"{IMG_DIR}{name}", 0))
     images.append(np.split(cv2.imread(f"{IMG_DIR}{name}", 0), num_images))
 
 for name in testNames: 
-    images.append(np.split(cv2.imread(f"{TST_DIR}{name}", 0), num_images))
+    testImages.append(np.split(cv2.imread(f"{TST_DIR}{name}", 0), num_images))
 
 for line in controlFile:
     controls.append(line.split(','))
@@ -69,6 +72,7 @@ testControls = np.array(testControls)
 
 print(np.shape(images[0]))
 print(np.shape(controls))
+print(controls)
 
 x_train = images
 x_test = testImages
@@ -87,6 +91,7 @@ model.add(Dense(100))
 model.add(Dense(3))
 
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
+model.save('test.h5')
 
 
 model.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE)
