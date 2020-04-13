@@ -51,7 +51,7 @@ def showCameras():
 			pass    
 
 
-client = carla.Client('localhost', PORT)
+client = carla.Client('10.0.2.2', PORT)
 client.set_timeout(10)
 world = client.get_world()
 actor_list = world.get_actors()
@@ -60,13 +60,16 @@ for actor in actor_list:
      if actor.type  == 'sensor.camera.rgb': 
         if not actor.is_listening:
             actor.listen(lambda raw: processImage(raw))
+        else: 
+            actor.stop()
+            actor.listen(lambda raw: processImage(raw))
 
 
-         frontCam = actor
-         print('found front camera!')
+        frontCam = actor
+        print('found front camera!')
      else:
-         print('could not find front camera!')
-         exit()
+        print('could not find front camera!')
+        exit()
 
 exit()
 
