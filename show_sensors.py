@@ -8,10 +8,10 @@ import sys
 import numpy as np
 
 try:
-		sys.path.append(glob.glob('../PythonAPI/carla/dist/carla-*%d.%d-%s.egg' % (
-				sys.version_info.major, 
-				sys.version_info.minor,
-				'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+    sys.path.append(glob.glob('carla/dist/carla-*%d.%d-%s.egg' % (
+            sys.version_info.major, 
+            sys.version_info.minor,
+            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
 		print("Failed to find carla's .egg directory")
 
