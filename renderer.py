@@ -3,7 +3,6 @@ from pygame.locals import *
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import time
 from car_env import CarEnv
 import numpy as np
 import sys
@@ -44,13 +43,28 @@ edges = (
         (6,7),
         )
 
+label_pts  = (
+        (0,0,0),
+        (3,0,0),
+        (0,3,0),
+        (0,0,3)
+        )
+
+labels = (
+        (0,1),
+        (0,2),
+        (0,3),
+        )
+
+colors = [[1,0,0],[0,1,0],[0,0,1]]
+
 points = list(vertices)
 for point in points:
     points[points.index(point)] = (point[0]/SCL_DOT,point[1]/SCL_DOT,point[2]/SCL_DOT)
 
 print(vertices)
 
-def Cube():
+def Render():
 
     glEnable(GL_POINT_SMOOTH)
     glPointSize(1.5)
@@ -78,31 +92,43 @@ def Cube():
     glEnd()
 
     glBegin(GL_LINES)
+
     for edge in edges:
         for point in edge:
             glColor3d(0,1,0)
             glVertex3fv(points[point])
+
+    for label in labels:
+        for pt in label:
+            glColor3d(colors[labels.index(label)][0], colors[labels.index(label)][1], colors[labels.index(label)][2])
+            glVertex3fv(label_pts[pt])
+
     glEnd()
 
 def parse_data(radar_data):
     point = np.frombuffer(radar_data.raw_data, dtype=np.dtype('f4'))
     if point.size != 0:
+        print(point)
         point = np.reshape(point, (len(radar_data), 4))[0]
-        print(np.shape(point))
         depth = point[3]
-        y = scl_pt*((depth)*(math.cos(math.pi - ((point[1])+(math.pi/2)))))   
-        if (point[1])+(math.pi/2) < 0:
-            y = -1*y
-        xz = scl_pt*((depth)*(math.cos(abs(point[1]))))
-        x = scl_pt*((xz)*(math.cos(-1*(point[2]+(math.pi/2)))))
-        if -1*(point[2])+(math.pi/2) > math.pi/2:
-            x = -1*x
-        z = scl_pt*((xz) * (math.sin(math.pi - (-1*(point[2])+(math.pi/2)))))
+        y = scl_pt*((depth)*(math.cos((point[1])+(math.pi/2))))   
+        xz = scl_pt*(math.sqrt((depth**2)-(y**2)))
+        x = scl_pt*((depth)*(math.sin(point[2])))
+        z = scl_pt*((depth)*(math.cos(point[2])))
+        # y = scl_pt*((depth)*(math.cos(math.pi - ((point[1])+(math.pi/2)))))   
+        # if (point[1])+(math.pi/2) < 0:
+        #     y = -1*y
+        # xz = scl_pt*((depth)*(math.cos(abs(point[1]))))
+
+
+        # x = scl_pt*((xz)*(math.cos(-1*(point[2]+(math.pi/2)))))
+        # if -1*(point[2])+(math.pi/2) > math.pi/2:
+        #     x = -1*x
+        # z = scl_pt*((xz) * (math.sin(math.pi - (-1*(point[2])+(math.pi/2)))))
 
         point = np.array([x,y,z])
         
         RADAR_MEM.append(point)
-        print(point)
     else:
         RADAR_MEM.append([0,0,100])
 
@@ -219,7 +245,7 @@ def main():
                    
 
             glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-            Cube()
+            Render()
             pygame.display.flip()
 
             if len(RADAR_MEM) >= car_env.radartick:

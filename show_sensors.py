@@ -9,9 +9,9 @@ import numpy as np
 
 try:
     sys.path.append(glob.glob('carla/dist/carla-*%d.%d-%s.egg' % (
-            sys.version_info.major, 
-            sys.version_info.minor,
-            'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+        sys.version_info.major, 
+        sys.version_info.minor,
+        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
 except IndexError:
 		print("Failed to find carla's .egg directory")
 
@@ -51,23 +51,23 @@ def showCameras():
 			pass    
 
 
-client = carla.Client('10.0.2.2', PORT)
+client = carla.Client('localhost', PORT)
 client.set_timeout(10)
 world = client.get_world()
 actor_list = world.get_actors()
 
 for actor in actor_list:
-     if actor.type  == 'sensor.camera.rgb': 
+    if actor.type  == 'sensor.camera.rgb': 
         if not actor.is_listening:
             actor.listen(lambda raw: processImage(raw))
-        else: 
+        elif actor.is_listening: 
             actor.stop()
             actor.listen(lambda raw: processImage(raw))
 
 
         frontCam = actor
         print('found front camera!')
-     else:
+    else:
         print('could not find front camera!')
         exit()
 

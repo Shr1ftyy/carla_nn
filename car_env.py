@@ -26,7 +26,7 @@ class CarEnv:
     def __init__(self, port=2000):
         self.radartick = 1000 
         self.hfov = 70
-        self.vfov = 45
+        self.vfov = 70
         self.port = port
         self.im_width = IMG_WIDTH
         self.im_height = IMG_HEIGHT
@@ -62,7 +62,7 @@ class CarEnv:
         self.radar.set_attribute("points_per_second", f'{self.radartick}')
         self.radar.set_attribute("range", f'30')
 
-        self.frontTrans = carla.Transform(carla.Location(x=2.5, z=0.75))
+        self.frontTrans = carla.Transform(carla.Location(x=4, z=0.75))
         self.leftTrans = carla.Transform(carla.Location(x=2.5,y=-1, z=0.75), carla.Rotation(yaw=-90)) 
         self.rightTrans = carla.Transform(carla.Location(x=2.5, y=1, z=0.75), carla.Rotation(yaw=90))
         self.backTrans = carla.Transform(carla.Location(x=-2.5, z=0.75), carla.Rotation(yaw=180))
