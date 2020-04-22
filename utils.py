@@ -1,7 +1,6 @@
 import math
 import os
 
-
 def imgsort(files):
     convFiles = []
     for i in range(0, len(files)):

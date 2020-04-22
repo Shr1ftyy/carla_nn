@@ -27,4 +27,6 @@ for actor in worldActors:
     print(f'{type(actor)}')
     if str(type(actor)) == "<class 'carla.libcarla.Vehicle'>": 
         print(actor)
+    elif str(type(actor)) == "<class 'carla.libcarla.ServerSideSensor'>":
+        print(actor)
 

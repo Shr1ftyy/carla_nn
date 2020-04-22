@@ -5,6 +5,7 @@ import math
 import cv2
 import os
 import sys
+from car_env import CarEnv
 import numpy as np
 
 try:
@@ -25,13 +26,10 @@ run = False
 PORT = 2069
 IMG_WIDTH = 640
 IMG_HEIGHT = 480
+spawn = CarEnv(port=2069) # <-- Remove when not testing :D 
 
 #black = np.zeros(shape=(IMG_HEIGHT, IMG_WIDTH,3))
-CAMERA_MEM = np.array([None,None,None,None]) # --> stores current frame received from cameras - inits as empty (None)
-RADAR_MEM = [None] # --> stores points in cloud from radar input
-LIDAR_MEM = [None]
-FPS = 30 # --> sets maximum FPS for sensor inputs
-TICKRATE = 1/FPS # --> sets sensor tickrate 
+CAMERA_MEM = [] # --> stores current frame received from cameras - inits as empty (None)
 
 def processImage(data, sensorID):
 	i = np.array(data.raw_data)
@@ -56,47 +54,49 @@ client.set_timeout(10)
 world = client.get_world()
 actor_list = world.get_actors()
 
+foundCam = False
+
+camNum = 0
 for actor in actor_list:
-    if actor.type  == 'sensor.camera.rgb': 
-        if not actor.is_listening:
-            actor.listen(lambda raw: processImage(raw))
-        elif actor.is_listening: 
-            actor.stop()
-            actor.listen(lambda raw: processImage(raw))
+    if actor.type_id  == 'sensor.camera.rgb': 
+        CAMERA_MEM.append('lol')
+        foundCam = True
+        actor.listen(lambda raw: processImage(raw, camNum))
+        camNum+=1
 
-
-        frontCam = actor
-        print('found front camera!')
-    else:
-        print('could not find front camera!')
-        exit()
-
-exit()
-
+if foundCam:
+    print('Found some Cameras!')
+else:
+    print('Failed to find cameras... Exiting')
+    exit()
+    sys.exit()
 
 print("SENSOR INIT DONE")                       
 
-
-
 run = True
 while run == True:
-#	v = car.get_velocity()
-#	kmh = int(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
-	# try:
-	# 	os.system('cls')
-	# except:
-	# 	os.system('clear')
+    try:
+    #	v = car.get_velocity()
+    #	kmh = int(3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2))
+            # try:
+            # 	os.system('cls')
+            # except:
+            # 	os.system('clear')
 
-	# print(f"""
-	# 	>>>Vehicle Status<<<
-	# 	Velocity: {kmh}kmh
-	# 	Location: {car.get_location()}
-	# 	""")
+            # print(f"""
+            # 	>>>Vehicle Status<<<
+            # 	Velocity: {kmh}kmh
+            # 	Location: {car.get_location()}
+            # 	""")
 
-	time.sleep(0.2)
-	showCameras()
+            showCameras()
 
+    except (KeyboardInterrupt, SystemExit):
+        pygame.quit()
+        sys.exit()
+        exit()
 
 
 ##### NEED TO FIGURE OUT HOW TO FORMAT RADAR INPUT AND VISUALIZE :D
+
 

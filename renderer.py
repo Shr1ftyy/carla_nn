@@ -166,14 +166,15 @@ def backup():
         point = np.reshape(point, (len(radar_data), 4))[0]
         print(np.shape(point))
         depth = point[3]
-        y = scl_pt*((depth)*(math.cos((point[1])+(math.pi/2))))   
-        if (point[1])+(math.pi/2) < 0:
-            y = -1*y
-        x = scl_pt*((depth)*(math.sin(-1*(point[1])+(math.pi/2))*(math.cos(-1*(point[2])+(math.pi/2)))))
+        y = scl_pt*((depth)*(math.sin((point[1]))))   
+        h = scl_pt*((depth)*(math.cos(point[1])))
+        x = scl_pt*((h)*(math.sin(point[2])))
+        z = scl_pt*((h)*(math.cos(point[2])))
+        # x = scl_pt*((depth)*(math.sin(-1*(point[1])+(math.pi/2))*(math.cos(-1*(point[2])+(math.pi/2)))))
         # x = scl_pt*((depth)*(math.cos(-1*(point[2])+(math.pi/2))))
-        if -1*(point[2])+(math.pi/2) > math.pi/2:
-            x = -1*x
-        z = scl_pt*(math.sqrt(-1*(x**2+y**2-depth**2)))
+        # if -1*(point[2])+(math.pi/2) > math.pi/2:
+        #     x = -1*x
+        # z = scl_pt*(math.sqrt(-1*(x**2+y**2-depth**2)))
         # z = scl_pt*(depth*(math.sin(-1*(point[2])+(math.pi/2))))
         point = np.array([x,y,z])
         

@@ -4,19 +4,19 @@ import numpy as np
 import utils
 import argparse
 import cv2
-# import tensorflow as tf
-# from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
-# from tensorflow.keras.models import Sequential, load_model
-# from sklearn.preprocessing import MinMaxScaler
+import tensorflow as tf
+from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
+from tensorflow.keras.models import Sequential, load_model
+from sklearn.preprocessing import MinMaxScaler
 # from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description='plays images from a selected TXT_DIR')
-parser.add_argument('img_dir', metavar='img_dir', type=str, nargs='?', help='directory to get image data')
-parser.add_argument('txt_dir', metavar='txt_dir', type=str, nargs='?', help='directory to get controls data')
-parser.add_argument('test_img', metavar='test_img', type=str, nargs='?', help='directory to get test image data')
-parser.add_argument('test_txt', metavar='test_txt', type=str, nargs='?', help='directory to get test controls data')
+parser.add_argument('img_dir', metavar='-i', type=str, nargs='?', help='directory to get image data')
+parser.add_argument('txt_dir', metavar='-t ', type=str, nargs='?', help='directory to get controls data')
+parser.add_argument('test_img', metavar='-v', type=str, nargs='?', help='directory to get test image data')
+parser.add_argument('test_txt', metavar='-f', type=str, nargs='?', help='directory to get test controls data')
 args = parser.parse_args()
 
 IMG_DIR = args.img_dir
@@ -53,11 +53,12 @@ for name in testFolder:
 print(imageNames)
 
 for name in imageNames: 
-    print(cv2.imread(f"{IMG_DIR}{name}", 0))
-    images.append(np.split(cv2.imread(f"{IMG_DIR}{name}", 0), num_images))
+    print(f"{IMG_DIR}/{name}")
+    print(cv2.imread(f"{IMG_DIR}/{name}", 0))
+    images.append(np.split(cv2.imread(f"{IMG_DIR}/{name}", 0), num_images))
 
 for name in testNames: 
-    testImages.append(np.split(cv2.imread(f"{TST_DIR}{name}", 0), num_images))
+    testImages.append(np.split(cv2.imread(f"{TST_DIR}/{name}", 0), num_images))
 
 for line in controlFile:
     controls.append(line.split(','))
@@ -79,7 +80,6 @@ x_test = testImages
 y_train = controls
 
 print(np.shape(x_test))
-exit()
 
 model = Sequential()
 model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(4, 480, 640)))
