@@ -5,7 +5,7 @@ import utils
 import argparse
 import cv2
 import tensorflow as tf
-from tensorflow.keras.layers import LSTM, Dense, Conv2D, Dropout
+from tensorflow.keras.layers import BatchNormalization, Reshape, CuDNNLSTM, Flatten, MaxPool2D, Dense, Conv2D, Dropout
 from tensorflow.keras.models import Sequential, load_model
 from sklearn.preprocessing import MinMaxScaler
 # from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
@@ -82,10 +82,13 @@ y_train = controls
 print(np.shape(x_test))
 
 model = Sequential()
-model.add(Conv2D(512, 3, strides=1, padding='same', input_shape=(4, 480, 640)))
-model.add(Reshape((512, -1)))
-model.add(Permute((2, 1)))
-model.add(CuDDNLSTM(32))
+model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", input_shape=(4, 480, 640), activation='relu'))
+model.add(MaxPool2D((2,2), padding='same', data_format='channels_first'))
+model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", activation=tf.nn.relu ))
+model.add(MaxPool2D((2,2), padding='same', data_format='channels_first'))
+model.add(BatchNormalization(axis=1))
+model.add(Flatten(data_format="channels_first"))
+model.add(CuDNNLSTM(units=64))
 model.add(Dropout(0.2))
 model.add(Dense(100))
 model.add(Dense(3))

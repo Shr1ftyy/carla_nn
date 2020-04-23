@@ -7,3 +7,4 @@ testing
 *.swp
 *out
 NOTES*
+*.h5
