@@ -11,6 +11,20 @@ from sklearn.preprocessing import MinMaxScaler
 # from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 import matplotlib.pyplot as plt
 
+'''
+
+This is is the code that create the neural network,
+trains and tests it
+
+TODO:
+    - Figure out how to make custom layers, take full advantage of tensorflow's
+    or pytorch's API
+    - Figure out how to make CNN accept multi-image input
+    - Implement LSTM after flattening (cnnLSTM)
+    - Deploy the model train in realtime
+
+'''
+
 
 parser = argparse.ArgumentParser(description='plays images from a selected TXT_DIR')
 parser.add_argument('img_dir', metavar='-i', type=str, nargs='?', help='directory to get image data')
@@ -23,6 +37,8 @@ IMG_DIR = args.img_dir
 TST_DIR = args.test_img
 TST_TXT = args.test_txt
 TXT_DIR = args.txt_dir
+IMG_H = 480
+IMG_W = 640
 
 #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=True)
 #sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -55,10 +71,12 @@ print(imageNames)
 for name in imageNames: 
     print(f"{IMG_DIR}/{name}")
     print(cv2.imread(f"{IMG_DIR}/{name}", 0))
-    images.append(np.split(cv2.imread(f"{IMG_DIR}/{name}", 0), num_images))
+    # TESTING WITH ONE IMAGE FOR NOW
+    images.append(np.split(cv2.imread(f"{IMG_DIR}/{name}", 0), num_images)[0])
 
 for name in testNames: 
-    testImages.append(np.split(cv2.imread(f"{TST_DIR}/{name}", 0), num_images))
+    # TESTING WITH ONE IMAGE FOR NOW
+    testImages.append(np.split(cv2.imread(f"{TST_DIR}/{name}", 0), num_images)[0])
 
 for line in controlFile:
     controls.append(line.split(','))
@@ -81,17 +99,25 @@ y_train = controls
 
 print(np.shape(x_test))
 
-model = Sequential()
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", input_shape=(4, 480, 640), activation='relu'))
-model.add(MaxPool2D((2,2), padding='same', data_format='channels_first'))
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", activation=tf.nn.relu ))
-model.add(MaxPool2D((2,2), padding='same', data_format='channels_first'))
-model.add(BatchNormalization(axis=1))
-model.add(Flatten(data_format="channels_first"))
-model.add(CuDNNLSTM(units=64))
-model.add(Dropout(0.2))
-model.add(Dense(100))
-model.add(Dense(3))
+# attempting to customize a layer :\ 
+def customFlatten(layer, batch_size, seq_len):
+    pass
+
+# Model
+model = Sequential([
+    # Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", input_shape=(4, IMG_H, IMG_W), activation='relu'), 
+    Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W), activation='relu'), 
+    BatchNormalization(axis=1),
+    MaxPool2D((2,2), padding='same', data_format='channels_last'),
+    Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='relu'),
+    BatchNormalization(axis=1),
+    MaxPool2D((2,2), padding='same', data_format='channels_last'),
+    Flatten(data_format="channels_last"),
+    # CuDNNLSTM(units=64, return_sequences=True, input_shape=(None, )),
+    Dropout(0.2),
+    Dense(100),
+    Dense(3),
+])
 
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
 model.save('test.h5')
