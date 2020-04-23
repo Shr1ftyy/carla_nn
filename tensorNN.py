@@ -72,11 +72,12 @@ for name in imageNames:
     print(f"{IMG_DIR}/{name}")
     print(cv2.imread(f"{IMG_DIR}/{name}", 0))
     # TESTING WITH ONE IMAGE FOR NOW
-    images.append(np.split(cv2.imread(f"{IMG_DIR}/{name}", 0), num_images)[0])
+    images.append(np.split(cv2.imread(f"{IMG_DIR}/{name}", 1), num_images)[0])
+    print(images[0].shape)
 
 for name in testNames: 
     # TESTING WITH ONE IMAGE FOR NOW
-    testImages.append(np.split(cv2.imread(f"{TST_DIR}/{name}", 0), num_images)[0])
+    testImages.append(np.split(cv2.imread(f"{TST_DIR}/{name}", 1), num_images)[0])
 
 for line in controlFile:
     controls.append(line.split(','))
@@ -93,9 +94,9 @@ print(np.shape(images[0]))
 print(np.shape(controls))
 print(controls)
 
-x_train = images
-x_test = testImages
-y_train = controls
+x_train = np.asarray(images)
+x_test = np.asarray(testImages)
+y_train = np.asarray(controls)
 
 print(np.shape(x_test))
 
@@ -106,7 +107,7 @@ def customFlatten(layer, batch_size, seq_len):
 # Model
 model = Sequential([
     # Conv2D(64, 3, strides=1, padding='same', data_format="channels_first", input_shape=(4, IMG_H, IMG_W), activation='relu'), 
-    Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W), activation='relu'), 
+    Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='relu'), 
     BatchNormalization(axis=1),
     MaxPool2D((2,2), padding='same', data_format='channels_last'),
     Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='relu'),
