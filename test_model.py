@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import numpy as np
 import utils
@@ -20,7 +21,7 @@ sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 '''
 
-This is is the code that create the neural network,
+This is is the code that loads the neural network,
 trains and tests it
 
 TODO:
@@ -48,14 +49,14 @@ IMG_DIR = args.img_dir
 TST_DIR = args.test_img
 TST_TXT = args.test_txt
 TXT_DIR = args.txt_dir
-IMG_H = 480/8
-IMG_W = 640/8
+IMG_H = int(480/4)
+IMG_W = int(640/4)
 
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=True)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-EPOCHS = 5
-BATCH_SIZE = 16
+EPOCHS = 1000
+BATCH_SIZE = 32
 model_name = f'{time.time}_carNN.h5'
 num_images = 4
 
@@ -74,61 +75,67 @@ testControls = []
 controlFile = str(open(TXT_DIR, 'r').read()).split('\n')
 testFile = str(open(TST_TXT, 'r').read()).split('\n')
 
-c = 0
 for name in imgFolder:
     imageNames.append(f"{name}.png")
 
 for name in testFolder:
     testNames.append(f"{name}.png")
 
-print(imageNames)
+print(testNames)
 
+print('Loading Training Images')
 for name in imageNames: 
-    print(f"{IMG_DIR}/{name}")
-    print(cv2.imread(f"{IMG_DIR}/{name}", 0))
+    # print(f"{IMG_DIR}/{name}")
+    # print(cv2.imread(f"{IMG_DIR}/{name}", 0))
     # TESTING WITH ONE IMAGE FOR NOW
     img = np.split(cv2.imread(f"{IMG_DIR}/{name}", 1), num_images)[0]
     img = cv2.resize(img, (IMG_W, IMG_H))
     images.append(img)
-    print(images[0].shape)
-    c += 1
-    if c >= 10:
-        break
 
-c = 0
+print('Loading Testing Images')
 for name in testNames: 
     # TESTING WITH ONE IMAGE FOR NOW
     # testImages.append(np.asarray(np.split(cv2.imread(f"{TST_DIR}/{name}", 1), num_images)[0]))
     tst = np.split(cv2.imread(f"{TST_DIR}/{name}", 1), num_images)[0]
     tst = cv2.resize(tst, (IMG_W, IMG_H))
     testImages.append(tst)
-    print(images[0].shape)
-    break
 
+print('Loading Training Controls')
 for line in controlFile:
-    controls.append(line.split(','))
-    c += 1
-    if c >= 11:
-        break
+   controls.append(line.split(','))
 
 controls.pop()
+controls = np.array(controls).astype('float32')
 
+
+print('Loading Testing Controls')
 for line in testFile:
     testControls.append(line.split(','))
-    break
 
 testControls.pop()
 
-controls = np.array(controls)
-testControls = np.array(testControls)
+testControls = np.array(testControls).astype('float32')
 
-print(np.shape(images[0]))
+print(np.shape(images))
+print(np.shape(testImages))
 print(np.shape(controls))
-print(controls)
+print(np.shape(testControls))
+print(controls[len(controls)-1])
+print(testControls[len(testControls)-1])
 
+# Preprocessing
+sc = MinMaxScaler(feature_range=(0, 1))
+
+# testControls = np.asarray(testControls).astype('float32')
+# controls = np.asarray(controls).astype('float32')
 x_train = np.asarray(images)/255.0
+# x_train = np.delete(x_train, len(x_train)-1, axis=0)
+
 x_test = np.asarray(testImages)/255.0
-y_train = np.asarray(controls)
+x_test = np.delete(x_test, len(x_test)-1, axis=0)
+
+y_train = sc.fit_transform(np.asarray(controls))
+
 
 
 print(np.shape(x_test))
@@ -138,27 +145,41 @@ print(np.shape(x_test))
 
 model = Sequential()
 
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='relu'))
+model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='linear'))
 model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='relu'))
+model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='linear'))
 model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
 model.add(Flatten())
 model.add(Dropout(0.2))
-model.add(Dense(100))
+model.add(Dense(100, activation='linear'))
 model.add(Dropout(0.2))
-model.add(Dense(3))
+model.add(Dense(3, activation='linear'))
+
 
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
-# model.save('test.h5')
+
+
 
 model.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE)
 
-predictions = model.predict(x_test)
+if not os.path.exists('models'):
+    os.mkdir('models')
+# model.save_weights('models/test.h5')
 
-plt.plot(testControls[1], color = 'red', label = f'Real steering')
-plt.plot(predictions[1], color = 'orange', label = f'Predicted steering')
-plt.plot(testControls[0], color = 'blue', label = f'Real steering')
-plt.plot(predictions[0], color = 'purple', label = f'Predicted steering')
+# model.save_weights('models/test.h5', save_format='h5')
+model.save('models/1000epochs.h5')
+
+# Predict on testing dataset
+predictions = model.predict(x_test)
+predictions = sc.inverse_transform(predictions)
+print(predictions)
+
+# Show results and compare
+
+plt.plot(testControls[:,1], color = 'red', label = f'Real steering')
+plt.plot(predictions[:,1], color = 'orange', label = f'Predicted steering')
+plt.plot(testControls[:,0], color = 'blue', label = f'Real throttle')
+plt.plot(predictions[:,0], color = 'purple', label = f'Predicted throttle')
 plt.title(f"Steering Angle Prediction")
 plt.xlabel('Frame')
 plt.ylabel('Steering Angle')

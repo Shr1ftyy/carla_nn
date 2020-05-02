@@ -1,12 +1,19 @@
 import pygame 
 from pygame.locals import *
-
+from car_env import CarEnv
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from car_env import CarEnv
 import numpy as np
 import sys
 import math
+
+'''
+
+This script visualizes radar input
+TODO:
+    - Fix coordinate location calculation, the points seem VERY OFF
+
+'''
 
 scl_pt = 1
 
@@ -113,8 +120,8 @@ def parse_data(radar_data):
         depth = point[3]
         y = scl_pt*((depth)*(math.cos((point[1])+(math.pi/2))))   
         xz = scl_pt*(math.sqrt((depth**2)-(y**2)))
-        x = scl_pt*((depth)*(math.sin(point[2])))
-        z = scl_pt*((depth)*(math.cos(point[2])))
+        x = scl_pt*((xz)*(math.sin(point[2])))
+        z = scl_pt*((xz)*(math.cos(point[2])))
         # y = scl_pt*((depth)*(math.cos(math.pi - ((point[1])+(math.pi/2)))))   
         # if (point[1])+(math.pi/2) < 0:
         #     y = -1*y
@@ -126,7 +133,7 @@ def parse_data(radar_data):
         #     x = -1*x
         # z = scl_pt*((xz) * (math.sin(math.pi - (-1*(point[2])+(math.pi/2)))))
 
-        point = np.array([x,y,z])
+        point = np.array([y,x,z])
         
         RADAR_MEM.append(point)
     else:

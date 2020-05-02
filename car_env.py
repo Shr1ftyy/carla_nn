@@ -48,6 +48,13 @@ class CarEnv:
         self.vehicle_list.append(self.vehicle)
 
         #SENSOR INIT
+        self.front_rgb = self.blueprint_library.find('sensor.camera.rgb')
+        self.front_rgb.set_attribute("sensor_tick", f"{TICKRATE}")
+        self.front_rgb.set_attribute("image_size_x", f"{self.im_width}")
+        self.front_rgb.set_attribute("image_size_y", f"{self.im_height}")
+        self.front_rgb.set_attribute("fov", f"110")
+        self.front_rgb.set_attribute("role_name", f"frontCam")
+
         self.rgb_cam = self.blueprint_library.find('sensor.camera.rgb')
         self.rgb_cam.set_attribute("sensor_tick", f"{TICKRATE}")
         self.rgb_cam.set_attribute("image_size_x", f"{self.im_width}")
@@ -62,7 +69,7 @@ class CarEnv:
         self.radar.set_attribute("points_per_second", f'{self.radartick}')
         self.radar.set_attribute("range", f'30')
 
-        self.frontTrans = carla.Transform(carla.Location(x=4, z=0.75))
+        self.frontTrans = carla.Transform(carla.Location(x=4, z=4))
         self.leftTrans = carla.Transform(carla.Location(x=2.5,y=-1, z=0.75), carla.Rotation(yaw=-90)) 
         self.rightTrans = carla.Transform(carla.Location(x=2.5, y=1, z=0.75), carla.Rotation(yaw=90))
         self.backTrans = carla.Transform(carla.Location(x=-2.5, z=0.75), carla.Rotation(yaw=180))
@@ -71,7 +78,7 @@ class CarEnv:
         #DEPTH
 
         #BGRA CAMERAS
-        self.frontCam = self.world.spawn_actor(self.rgb_cam, self.frontTrans, attach_to=self.vehicle_list[0])
+        self.frontCam = self.world.spawn_actor(self.front_rgb, self.frontTrans, attach_to=self.vehicle_list[0])
         self.sensor_list.append(self.frontCam)
         self.leftCam = self.world.spawn_actor(self.rgb_cam, self.leftTrans, attach_to=self.vehicle_list[0])
         self.sensor_list.append(self.leftCam)
@@ -83,3 +90,9 @@ class CarEnv:
         #RADAR
         self.frontRadar = self.world.spawn_actor(self.radar, self.frontTrans, attach_to=self.vehicle_list[0])
         self.sensor_list.append(self.frontRadar)
+
+    def destroy(self):
+        for car in self.vehicle_list:
+            car.destroy()
+        for sensor in self.sensor_list:
+            sensor.destroy()
