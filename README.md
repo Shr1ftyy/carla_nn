@@ -1,4 +1,4 @@
-# Level 3 Autonomous Driving System - Using Carla #
+# Level 2 Autonomous Driving System - Using Carla #
 
 ## TODO: ##
 - Research on different ANN Architecture to use - currently thinking of using a VAE and Inception CNN with 
