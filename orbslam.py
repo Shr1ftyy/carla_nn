@@ -1,6 +1,7 @@
+#!C:/Users/Syeam/AppData/Local/Programs/Python/Python37/python.exe
 import cv2 
 from skimage.measure import ransac
-from skimage.transform import EssentialMatrixTransform
+from skimage.transform import EssentialMatrixTransform, FundamentalMatrixTransform
 import sys
 import numpy as np 
 import os
@@ -58,7 +59,7 @@ edges = (
 
 class Extractor(object):
     def __init__(self):
-        self.orb = orb = cv2.ORB_create(1000)
+        self.orb = orb = cv2.ORB_create()
         self.last = None
 
     def extract(self, img):
@@ -88,7 +89,7 @@ class Extractor(object):
             model, inliers = ransac((np.int32(pts1),
                 np.int32(pts2)),
                 EssentialMatrixTransform, min_samples=8,
-                residual_threshold=1, max_trials=500)
+                residual_threshold=0.75, max_trials=100)
             
             E = model.params
             pts1 = list(compress(pts1, inliers))
@@ -112,6 +113,7 @@ def EssentialtoRt(E):
 
     W = np.array([[0,-1,0],[1,0,0],[0,0,1]])
     Winv = np.linalg.inv(W)
+    Z = np.array([[0,1,0],[-1,0,0],[0,0,0]])
     # SVD on E
     U,S,Vt = np.linalg.svd(E)
     if np.linalg.det(U) < 0:
@@ -123,6 +125,7 @@ def EssentialtoRt(E):
         R = np.dot(np.dot(U, W.T), Vt)
     # Transformation Matrix
     t = np.dot(np.dot(np.dot(U,W),S), U.T)
+    # t = np.dot(np.dot(U,Z), U.T)
     # Rotation Matrix
     return R, t
 
@@ -152,7 +155,7 @@ def Compute3D(y,y_p,R,t):
     r3 = R[2]
 
     x3 = (np.dot(r1-(y[0]*r3),t))/(np.dot(r1-(y[0]*r3),y))
-    x1_2 = x3*(y[:-1])
+    x1_2 = x3*(y[:2])
     
     return (x1_2[0], x1_2[1], x3)
 
@@ -174,24 +177,12 @@ def controls():
 
     if pressed_mouse[1]:
         ms = pygame.mouse.get_rel()
-        glRotate(2, ms[1], ms[0], 0)
+        glRotate(10, ms[1], ms[0], 0)
 
     if pressed_mouse[2]:
         ms = pygame.mouse.get_rel()
         glTranslatef(ms[0]/100, -1 * ms[1]/100, 0)
 
-    if keys[pygame.K_UP]:
-        glRotate(0.1, -1, 0, 0)
-    if keys[pygame.K_DOWN]:
-        glRotate(0.1, 1, 0, 0)
-    if keys[pygame.K_LEFT]:
-        glRotate(0.1, 0, -1, 0)
-    if keys[pygame.K_RIGHT]:
-        glRotate(0.1, 0, 1, 0)
-    if keys[pygame.K_s]:
-        glTranslatef(0.0, 0.0, -1)
-    if keys[pygame.K_w]:
-        glTranslatef(0.0, 0.0, 1)
 
 def render(pts):
     glEnable(GL_POINT_SMOOTH)
@@ -252,20 +243,22 @@ def main():
     pygame.init()
     display =  (1280, 720)
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    gluPerspective(90, (display[0]/display[1]), 0.1, 50.0)
+    glTranslatef(0.0,0.0, -5)
 
     while True:
 
         try:
             for image in convFiles:
                 img, pts = process_frame(np.split(cv2.imread(image+'.png', -1), 4)[0])
+                glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
                 try:
-                    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
                     render(pts)
-                    pygame.display.flip()
                 except:
                     pass
+                pygame.display.flip()
                 cv2.imshow('_', img)
-                cv2.waitKey(WAITKEY)
+                cv2.waitKey(1)
                 controls()
 
         except (KeyboardInterrupt, SystemExit):
