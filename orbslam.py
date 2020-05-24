@@ -22,12 +22,11 @@ parser.add_argument('slam', metavar='slam', type=str, nargs='?', help='insert ye
 args = parser.parse_args()
 _dir = args.directory 
 files = os.listdir(_dir)
-print(files)
 convFiles = utils.imgsort(files) 
 WAITKEY = 500 
 SCL_FACTOR = 2
 
-print(convFiles)
+# print(convFiles)
 
 os.chdir(_dir)
 
@@ -97,7 +96,6 @@ class Extractor(object):
 
             for (i,j) in zip(pts1,pts2):
                 filterMatch.append([i,j])
-            # print(F)
             # matches = zip([kps[m.queryIdx] for m in matches], [self.last['kps'][m.trainIdx]for m in matches])
 
         self.last = {'kps': kps, 'des': des}
@@ -115,18 +113,20 @@ def EssentialtoRt(E):
     Winv = np.linalg.inv(W)
     Z = np.array([[0,1,0],[-1,0,0],[0,0,0]])
     # SVD on E
-    U,S,Vt = np.linalg.svd(E)
+    U, S, Vt = np.linalg.svd(E)
+    # S = np.diag(S)
     if np.linalg.det(U) < 0:
         U *= -1.0
     if np.linalg.det(Vt) < 0:
         Vt *= -1.0
+    # Rotation Matrix
     R = np.dot(np.dot(U, Winv),Vt)
     if np.sum(R.diagonal()) < 0:
         R = np.dot(np.dot(U, W.T), Vt)
     # Transformation Matrix
     t = np.dot(np.dot(np.dot(U,W),S), U.T)
     # t = np.dot(np.dot(U,Z), U.T)
-    # Rotation Matrix
+
     return R, t
 
 def Compute3D(y,y_p,R,t):
@@ -154,9 +154,13 @@ def Compute3D(y,y_p,R,t):
     r2 = R[1]
     r3 = R[2]
 
-    x3 = (np.dot(r1-(y[0]*r3),t))/(np.dot(r1-(y[0]*r3),y))
+
+    # x3 = (np.dot(r1-(y_p[0]*r3),t))/(np.dot(r1-(y_p[0]*r3),y))
+    x3 = np.dot(r1-np.dot(y_p[0], r3), t)/np.dot(r1-np.dot(y_p[0], r3), y)
+    # print(x3.shape)
+    # print(y[:2].shape)
     x1_2 = x3*(y[:2])
-    
+
     return (x1_2[0], x1_2[1], x3)
 
 def controls():
@@ -185,6 +189,13 @@ def controls():
 
 
 def render(pts):
+    #Move car model around in 3D Space
+    # car = np.array(points) 
+    # car = np.dot(np.dot(car,np.diag(t)),R)
+
+    # print(R)
+    # print(np.diag(t))
+
     glEnable(GL_POINT_SMOOTH)
     glPointSize(1.5)
 
@@ -205,7 +216,14 @@ def render(pts):
     glBegin(GL_POINTS)
 
     glColor3d(1,0,0)
-    glVertex3d(0, 0, 0)
+    glVertex3d(0,0,0)
+    # print("error HERE:")
+    # print(point)
+    # print(point[0])
+    # print(point[0].shape)
+    # print(point[0,0]-1)
+    # glVertex3d(point[0]-1,point[1]-0.5,point[2])
+
 
     glEnd()
 
@@ -223,9 +241,10 @@ def process_frame(img):
     matches, E = f.extract(img)
     pts = []
     if matches == []:
-        return img, None
+        return img, None, None, None
     else:
-        # Perform Singular Value Decomposition the current Essential matrix to derive rotation matrix R and transformation matrix T
+        # Perform Singular Value Decomposition on the current Essential matrix to derive rotation matrix R and transformation matrix T
+        # print(np.linalg.det(E))
         R, t = EssentialtoRt(E)
         for p1, p2 in matches:
             u1, v1 = map(lambda x: int(round(x)), p1)
@@ -235,9 +254,11 @@ def process_frame(img):
             # Compute 3D points from image points, rotation and translation
             pts.append(Compute3D([u1,v1], [u2,v2], R, t))
 
-    return img, pts
+    return img, pts, R, t
 
+yeet = False
 def main():
+    global yeet
     clock = pygame.time.Clock()
     clock.tick(60)
     pygame.init()
@@ -250,14 +271,24 @@ def main():
 
         try:
             for image in convFiles:
-                img, pts = process_frame(np.split(cv2.imread(image+'.png', -1), 4)[0])
+                img, pts, R, t = process_frame(np.split(cv2.imread(image+'.png', -1), 4)[0])
+                if R is not None:
+                    yeet = True
+                # print(R)
+                # print(t)
                 glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-                try:
-                    render(pts)
-                except:
-                    pass
+                # car = np.array(points) 
+                # print(car)
+                # print(car.shape)
+
+                if yeet:
+                    try:
+                        render(pts)
+                    except Exception as e: 
+                        raise e
+
                 pygame.display.flip()
-                cv2.imshow('_', img)
+                cv2.imshow('Preview - ORBSlam', img)
                 cv2.waitKey(1)
                 controls()
 

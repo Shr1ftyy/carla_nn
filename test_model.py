@@ -13,8 +13,9 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 # Imports model
-from model import ConvNet
+from model import ResNet
 
+tf.executing_eagerly()
 gpu_options = tf.GPUOptions(allow_growth=True)
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=True)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
@@ -55,7 +56,7 @@ IMG_W = int(640/4)
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=True)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
-EPOCHS = 1000
+EPOCHS = 50
 BATCH_SIZE = 32
 model_name = f'{time.time}_carNN.h5'
 num_images = 4
@@ -129,7 +130,7 @@ sc = MinMaxScaler(feature_range=(0, 1))
 # testControls = np.asarray(testControls).astype('float32')
 # controls = np.asarray(controls).astype('float32')
 x_train = np.asarray(images)/255.0
-# x_train = np.delete(x_train, len(x_train)-1, axis=0)
+x_train = np.delete(x_train, len(x_train)-1, axis=0)
 
 x_test = np.asarray(testImages)/255.0
 x_test = np.delete(x_test, len(x_test)-1, axis=0)
@@ -141,19 +142,19 @@ y_train = sc.fit_transform(np.asarray(controls))
 print(np.shape(x_test))
 
 # Prepare model for training
-# model = ConvNet(IMG_H, IMG_W)
+model = ResNet((IMG_H, IMG_W))
 
-model = Sequential()
+# model = Sequential()
 
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='linear'))
-model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
-model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='linear'))
-model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
-model.add(Flatten())
-model.add(Dropout(0.2))
-model.add(Dense(100, activation='linear'))
-model.add(Dropout(0.2))
-model.add(Dense(3, activation='linear'))
+# model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='linear'))
+# model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
+# model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='linear'))
+# model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
+# model.add(Flatten())
+# model.add(Dropout(0.2))
+# model.add(Dense(100, activation='linear'))
+# model.add(Dropout(0.2))
+# model.add(Dense(3, activation='linear'))
 
 
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
@@ -166,8 +167,8 @@ if not os.path.exists('models'):
     os.mkdir('models')
 # model.save_weights('models/test.h5')
 
-# model.save_weights('models/test.h5', save_format='h5')
-model.save('models/1000epochs.h5')
+model.save_weights('models/res.h5', save_format='h5')
+# model.save('models/1000epochs.h5')
 
 # Predict on testing dataset
 predictions = model.predict(x_test)
