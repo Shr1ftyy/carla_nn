@@ -3,7 +3,7 @@ import numpy as np
 import os
 import time
 import argparse
-from slam import FastSlam
+from utils import FastSlam
 
 parser = argparse.ArgumentParser(description='plays images from a selected directory')
 parser.add_argument('directory', metavar='directory', type=str, nargs='?', help='directory to parse images from')
@@ -40,7 +40,7 @@ if args.slam.lower() == 'yes':
         imgSplit = np.split(img,4)
 
         for image in imgSplit:
-            slamImg.append(FastSlam.paint(image))
+            slamImg.append(FastSlam.paint(image, scale_factor=2))
 
         img = np.concatenate(slamImg[:])
         cv2.imshow(WINDOW, img)
