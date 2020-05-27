@@ -1,4 +1,4 @@
-# Level 2 Autonomous Driving System - Using Carla #
+# Level 2-3 Autonomous Driving System - Using Carla #
 
 ## TODO: ##
 - Research on different ANN Architectures to use - currently thinking of using a VAE and Inception CNN with 
@@ -8,4 +8,4 @@ residual connections.
 - Get at least a toy implementation of ORBSlam up and running
 
 # Goal:
-My final goal is to get a Level 2 Self-Driving System up and running as soon as possible (will take some time)
+My final goal is to get a Level 2-3 Self-Driving System up and running as soon as possible (will take some time)
