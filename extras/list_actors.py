@@ -4,6 +4,7 @@ import glob
 import os
 import sys
 
+sys.path.append(glob.glob('..'))
 try:
     sys.path.append(glob.glob('carla/dist/carla-*%d.%d-%s.egg' % (
         sys.version_info.major,

@@ -13,3 +13,5 @@ backups
 pics
 gluttest.py
 testRender.py
+output/
+cont.txt

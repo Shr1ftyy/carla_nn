@@ -1,8 +1,12 @@
 import cv2
 import numpy as np 
 import os
+import sys
 import time
 import argparse
+
+sys.path.append(glob.glob('..'))
+
 from utils import FastSlam
 
 parser = argparse.ArgumentParser(description='plays images from a selected directory')

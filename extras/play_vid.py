@@ -1,14 +1,14 @@
 import cv2
 import numpy as np 
 import os
-cur = os.getcwd()
 import time
 import argparse
-os.chdir('..')
+import sys
+
+sys.path.append(glob.glob('..'))
+
 import utils
 from utils import FastSlam
-
-os.chdir(cur)
 
 parser = argparse.ArgumentParser(description='plays images from a selected directory')
 parser.add_argument('directory', metavar='directory', type=str, nargs='?', help='directory to parse images from')

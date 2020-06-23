@@ -57,9 +57,11 @@ edges = (
         )
 
 class Extractor(object):
-    def __init__(self):
+    def __init__(self, K):
         self.orb = orb = cv2.ORB_create()
         self.last = None
+        self.K = K
+        self.Kinv = np.linalg.inv(K)
 
     def extract(self, img):
         """
@@ -87,8 +89,10 @@ class Extractor(object):
 
             model, inliers = ransac((np.int32(pts1),
                 np.int32(pts2)),
-                EssentialMatrixTransform, min_samples=8,
-                residual_threshold=0.75, max_trials=100)
+                # EssentialMatrixTransform, 
+                FundamentalMatrixTransform, 
+                min_samples=8,
+                residual_threshold=1, max_trials=100)
             
             E = model.params
             pts1 = list(compress(pts1, inliers))
@@ -102,7 +106,14 @@ class Extractor(object):
        
         return filterMatch, E 
 
+#Intrinsic Parameters
+foc = 20
+H, W = np.split(cv2.imread(convFiles[0]+'.png', -1), 4)[0].shape[:-1]
+K = np.array([[foc,0,W//2],[0,foc,H//2],[0,0,1]])
+
 f = Extractor()
+
+f_est_avg = []
 
 def EssentialtoRt(E):
     """
@@ -115,6 +126,13 @@ def EssentialtoRt(E):
     # SVD on E
     U, S, Vt = np.linalg.svd(E)
     # S = np.diag(S)
+    # print(f"S[0:2]: {S[0],S[1]}")
+
+    #Weird estimation thing
+    f_est = np.sqrt(2)/((S[0]+S[1])/2)
+    f_est_avg.append(f_est)
+    print(f_est, np.median(f_est_avg))
+
     if np.linalg.det(U) < 0:
         U *= -1.0
     if np.linalg.det(Vt) < 0:
@@ -148,7 +166,7 @@ def Compute3D(y,y_p,R,t):
     y = np.asarray(y)
     y_p = np.asarray(y_p)
     R = np.asarray(R)
-    t = np.asarray(t)
+    # t = np.diag(np.asarray(t)) FIX MAYBE
 
     r1 = R[0]
     r2 = R[1]
@@ -188,13 +206,15 @@ def controls():
         glTranslatef(ms[0]/100, -1 * ms[1]/100, 0)
 
 
-def render(pts):
+def render(pts, R, t):
+    global points
     #Move car model around in 3D Space
-    # car = np.array(points) 
-    # car = np.dot(np.dot(car,np.diag(t)),R)
-
     # print(R)
     # print(np.diag(t))
+
+    # points = np.asarray(points) 
+    # points = np.dot(np.dot(points,np.diag(t)),R)
+
 
     glEnable(GL_POINT_SMOOTH)
     glPointSize(1.5)
@@ -217,12 +237,7 @@ def render(pts):
 
     glColor3d(1,0,0)
     glVertex3d(0,0,0)
-    # print("error HERE:")
-    # print(point)
-    # print(point[0])
-    # print(point[0].shape)
-    # print(point[0,0]-1)
-    # glVertex3d(point[0]-1,point[1]-0.5,point[2])
+    # glVertex3d(points[0][0]-1,points[0][1]-0.5,points[0][2])
 
 
     glEnd()
@@ -235,7 +250,6 @@ def render(pts):
             glVertex3fv(points[point])
 
     glEnd()
-
 
 def process_frame(img):
     matches, E = f.extract(img)
@@ -283,7 +297,7 @@ def main():
 
                 if yeet:
                     try:
-                        render(pts)
+                        render(pts, R, t)
                     except Exception as e: 
                         raise e
 

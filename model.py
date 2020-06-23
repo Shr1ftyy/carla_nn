@@ -42,7 +42,7 @@ class ResNet(tf.keras.Model):
         self.dropout = layers.Dropout(0.2)
         self.dense1000 = layers.Dense(1000)
         self.dense100 = layers.Dense(100)
-        self.dense3 = layers.Dense(3, activation='linear')
+        self.dense1 = layers.Dense(1, activation='linear')
         self.ResBlock = ResBlock()
         # self.lstm = layer.LSTM(units=500, return_sequences=True, return_state=True)
 
@@ -59,6 +59,6 @@ class ResNet(tf.keras.Model):
         X = self.dropout(X)
         X = self.dense100(X)
         X = self.dropout(X)
-        output = self.dense3(X)
+        output = self.dense1(X)
         
         return output

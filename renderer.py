@@ -215,8 +215,7 @@ def main():
         glTranslatef(0.0, 0.0, -3)
 
         while True:
-            events = pygame.event.get()
-            keys = pygame.key.get_pressed()
+            events = pygame.event.get() keys = pygame.key.get_pressed()
             pressed_mouse = pygame.mouse.get_pressed()
 
             for event in events:

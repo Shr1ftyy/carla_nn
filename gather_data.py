@@ -1,3 +1,4 @@
+#!C:/Users/Syeam/AppData/Local/Programs/Python/Python37/python.exe
 from car_env import CarEnv
 import sys
 import glob 
@@ -22,12 +23,14 @@ import random
 import time
 
 parser = argparse.ArgumentParser(description='plays images from a selected TXT_DIR')
-parser.add_argument('img_dir', metavar='img_dir', type=str, nargs='?', help='directory to store image data')
-parser.add_argument('txt_dir', metavar='txt_dir', type=str, nargs='?', help='directory to store controls data')
-parser.add_argument('txt_name', metavar='txt_name', type=str, nargs='?', help='name of text file to store controls data')
+parser.add_argument('raw_dir', metavar='-r', type=str, nargs='?', help='directory to store image data')
+parser.add_argument('sem_dir', metavar='-s', type=str, nargs='?', help='directory to store semantic data') 
+parser.add_argument('txt_dir', metavar='-d', type=str, nargs='?', help='directory to store controls data')
+parser.add_argument('txt_name', metavar='-t', type=str, nargs='?', help='name of text file to store controls data')
 args = parser.parse_args()
 
-IMG_DIR = args.img_dir
+RAW_DIR = args.raw_dir
+SEM_DIR = args.sem_dir
 TXT_DIR = args.txt_dir
 TXT_NAME = args.txt_name
 
@@ -36,9 +39,11 @@ car = car_env.vehicle_list[0]
 sensors = car_env.sensor_list
 im_width = car_env.im_width
 im_height = car_env.im_height
-CAMERA_MEM = []
+CAMERA_MEM = {}
 timestamp = 0
 
+
+cc = carla.ColorConverter.CityScapesPalette
 
 # Prints controls into console
 def showLogs():
@@ -57,41 +62,43 @@ def processimg(data, sid):
 def gather_data():
     global timestamp
     controls = car.get_control()
-    throttle = controls.throttle
-    brake  = controls.brake
+    # throttle = controls.throttle
+    # brake  = controls.brake
     steer = controls.steer
 
-    for j in range(0, len(sensors)):
-        os.chdir(IMG_DIR)
-        stitch = np.concatenate(CAMERA_MEM[:])
-        cv2.imwrite(f'{timestamp}.png', stitch)
-        os.chdir('../..')
+    # os.chdir(RAW_DIR)
+    # cv2.imwrite(f'{timestamp}.png', CAMERA_MEM['front'])
+    # os.chdir('..')
+    # os.chdir(SEM_DIR)
+    # cv2.imwrite(f'{timestamp}.png', CAMERA_MEM['semantic'])
+    # os.chdir('..')
 
     timestamp += 1
 
-    return f"{throttle},{steer},{brake}"
+    return f"{steer}"
 
 
 # Main function
 def main():
     global data
     global sensors
-    print('initializing memory')
-    for _ in sensors:
-        CAMERA_MEM.append(None)
+    global timestamp
 
-    sensors[0].listen(lambda image: processimg(image, 0))
-    sensors[1].listen(lambda image: processimg(image, 1))
-    sensors[2].listen(lambda image: processimg(image, 2))
-    sensors[3].listen(lambda image: processimg(image, 3))
+    sensors['front'].listen(lambda image: image.save_to_disk('{SEM_DIR}/{timestamp}.png' % image.frame))
+    sensors['semantic'].listen(lambda image: image.save_to_disk('{RAW_DIR}/{timestamp}.png' % image.frame, cc))
+    # sensors['semantic'].listen(lambda image: processimg(image.convert(cc), 'semantic'))
 
     if not os.path.exists(TXT_DIR):
         os.mkdir(TXT_DIR)
         print('made dir')
 
-    if not os.path.exists(IMG_DIR):
-        os.mkdir(IMG_DIR)
-        print('made img dir')
+    if not os.path.exists(RAW_DIR):
+        os.mkdir(RAW_DIR)
+        print('made raw dir')
+
+    if not os.path.exists(SEM_DIR):
+        os.mkdir(SEM_DIR)
+        print('made sem dir')
 
     data = open(f"{TXT_DIR}{TXT_NAME}", "w")
     print('initializing sensors')
@@ -104,6 +111,7 @@ def main():
         while timestamp < 6000:
             showLogs()
             data.write(f'{gather_data()}\n')
+            timestamp += 1
         data.close()
         car.destroy()
         for sensor in sensors:

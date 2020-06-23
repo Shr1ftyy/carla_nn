@@ -102,8 +102,9 @@ for name in testNames:
     testImages.append(tst)
 
 print('Loading Training Controls')
-for line in controlFile:
-   controls.append(line.split(','))
+
+# for line in controlFile:
+#    controls.append(line.split(','))
 
 controls.pop()
 controls = np.array(controls).astype('float32')
@@ -144,31 +145,14 @@ print(np.shape(x_test))
 # Prepare model for training
 model = ResNet((IMG_H, IMG_W))
 
-# model = Sequential()
-
-# model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", input_shape=(IMG_H, IMG_W, 3), activation='linear'))
-# model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
-# model.add(Conv2D(64, 3, strides=1, padding='same', data_format="channels_last", activation='linear'))
-# model.add(MaxPool2D((2,2), padding='same', data_format='channels_last'))
-# model.add(Flatten())
-# model.add(Dropout(0.2))
-# model.add(Dense(100, activation='linear'))
-# model.add(Dropout(0.2))
-# model.add(Dense(3, activation='linear'))
-
-
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
-
-
 
 model.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE)
 
 if not os.path.exists('models'):
     os.mkdir('models')
-# model.save_weights('models/test.h5')
 
 model.save_weights('models/res.h5', save_format='h5')
-# model.save('models/1000epochs.h5')
 
 # Predict on testing dataset
 predictions = model.predict(x_test)
@@ -176,11 +160,8 @@ predictions = sc.inverse_transform(predictions)
 print(predictions)
 
 # Show results and compare
-
-plt.plot(testControls[:,1], color = 'red', label = f'Real steering')
-plt.plot(predictions[:,1], color = 'orange', label = f'Predicted steering')
-plt.plot(testControls[:,0], color = 'blue', label = f'Real throttle')
-plt.plot(predictions[:,0], color = 'purple', label = f'Predicted throttle')
+plt.plot(testControls, color = 'blue', label = f'Real steering')
+plt.plot(predictions, color = 'red', label = f'Predicted steering')
 plt.title(f"Steering Angle Prediction")
 plt.xlabel('Frame')
 plt.ylabel('Steering Angle')
