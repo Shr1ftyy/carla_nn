@@ -28,6 +28,66 @@ class ResBlock(layers.Layer):
 
         return X
 
+# Network for semantic segmentation
+class SegNet(layers.Layer):
+    def __init__(self, in_shape, channel_idx="channels_last"):
+        super(Conv, self).__init__()
+        self.channel_idx = channel_idx
+        self.in_shape = in_shape
+
+        self.maxpool = layers.MaxPool2D(pool_size=(2, 2), strides=None, padding='valid', data_format=None, **kwargs)
+        # self.Bn = layers.BatchNormalization()
+
+        self.Conv1 = layers.Conv2D(64, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Conv2 = layers.Conv2D(128, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Conv3 = layers.Conv2D(256, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Conv4 = layers.Conv2D(512, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+
+        self.upsample = layers.UpSampling2D(size=(2,2), data_format=channel_idx)
+
+        self.Deconv1 = layers.Conv2DTranspose(64, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Deconv2 = layers.Conv2DTranspose(128, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Deconv3 = layers.Conv2DTranspose(256, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+        self.Deconv4 = layers.Conv2DTranspose(512, 3, strides=1, padding='same', data_format=channel_idx, input_shape=self.in_shape, activation='elu')
+
+    def call(self, inputs):
+        # Encoding
+        X = self.Conv1(inputs)
+        X = self.Conv1(X)
+        X = self.maxpool(X)
+
+        X = self.Conv2(X)
+        X = self.Conv2(X)
+        X = self.maxpool(X)
+
+        X = self.Conv3(X)
+        X = self.Conv3(X)
+        X = self.maxpool(X)
+
+        X = self.Conv4(X)
+        X = self.Conv4(X)
+        X = self.maxpool(X)
+
+        # Decoding
+        X = self.upsample(X)
+        X = self.Deconv1(X)
+        X = self.Deconv1(X)
+
+        X = self.upsample(X)
+        X = self.Deconv2(X)
+        X = self.Deconv2(X)
+
+        X = self.upsample(X)
+        X = self.Deconv3(X)
+        X = self.Deconv3(X)
+
+        X = self.upsample(X)
+        X = self.Deconv4(X)
+        output = self.Deconv4(X)
+
+        return output
+
+
 # CNN with a Residual Layer
 class ResNet(tf.keras.Model):
     def __init__(self, in_shape, channel_idx="channels_last"):
@@ -46,7 +106,8 @@ class ResNet(tf.keras.Model):
         self.ResBlock = ResBlock()
         # self.lstm = layer.LSTM(units=500, return_sequences=True, return_state=True)
 
-    def call(self, inputs, training=False):
+    # def call(self, inputs, training=False):
+    def call(self, inputs): 
         X = self.inConv(inputs)
         X = self.hConv2d(X)
         X = self.ResBlock(X)

@@ -63,6 +63,8 @@ class Extractor(object):
         self.K = K
         self.Kinv = np.linalg.inv(K)
 
+    def normalize(self, pts):
+
     def extract(self, img):
         """
         Extracts features using ORB and Essential Matrix from sequence of images using RANSAC
@@ -89,8 +91,8 @@ class Extractor(object):
 
             model, inliers = ransac((np.int32(pts1),
                 np.int32(pts2)),
-                # EssentialMatrixTransform, 
-                FundamentalMatrixTransform, 
+                EssentialMatrixTransform, 
+                # FundamentalMatrixTransform, 
                 min_samples=8,
                 residual_threshold=1, max_trials=100)
             
@@ -109,7 +111,10 @@ class Extractor(object):
 #Intrinsic Parameters
 foc = 20
 H, W = np.split(cv2.imread(convFiles[0]+'.png', -1), 4)[0].shape[:-1]
-K = np.array([[foc,0,W//2],[0,foc,H//2],[0,0,1]])
+
+K = np.array([[foc,  0,W//2],
+             [   0,foc,H//2],
+             [   0,  0,   1]])
 
 f = Extractor()
 
