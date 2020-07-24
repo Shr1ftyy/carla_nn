@@ -10,7 +10,7 @@
 	- Research on different ANN Architectures 
 		- Implement recurrence, temporal dynamics of scene
 		- Semantic Segmentation
-	- Look more into automatic labelling of moving vs. non-moving objects in seen (have my own little idea wanna
+	- Look more into automatic labelling of moving vs. non-moving objects in scene (have my own little idea wanna
 	  implement :smile:).
 	- Set up data trigger infrastructure - data collection for edge cases
 
