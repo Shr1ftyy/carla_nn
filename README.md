@@ -1,18 +1,31 @@
 # Level 2-3 Autonomous Driving System - Using Carla #
 
 - orbslam.py - toy implementation of monocular SLAM (ORBSlam) - INCOMPLETE
-- model.py - Neural Network Model - architecture needs improvement
-- renderer.py - Radar point cloud visualization
+- model.py - Neural Network Model - architecture needs improvement, is currently
+  just a basic ResNet
+- renderer.py - Radar point cloud visualization, very slow lol
 
 ## TODO: ##
-- Research on different ANN Architectures to use 
-residual connections.
-- Implement LSTM after flattening (cnnLSTM)
-- Set up data trigger infrastructure - data collection for edge cases
-- Get at least a toy implementation of ORBSlam up and running
+- Machine Learning
+	- Research on different ANN Architectures 
+		- Implement recurrence, temporal dynamics of scene
+		- Semantic Segmentation
+	- Look more into automatic labelling of moving vs. non-moving objects in seen (have my own little idea wanna
+	  implement :smile:).
+	- Set up data trigger infrastructure - data collection for edge cases
+
+- SLAM
+	- Read more of Multiple View Geometry
+	- Figure out what to do after getting Camera Matrix (projection matrix?)
+	- Get at least a toy implementation of ORBSlam up and running
+
+- Misc.
+	- Leverage Cloud GPU for training and stuff (Google Colab)
+	- git gud
+
 
 # Goal:
-My final goal is to get a Level 2-3 Self-Driving System up and running as soon as possible (will take some time)
+My final goal is to get a Level 2-3 Self-Driving System up and running, whilst also learning about relevant concepts
 
 # NOTES #
 ## Multiple View Geometry in Computer Vision: ##
@@ -34,7 +47,7 @@ My final goal is to get a Level 2-3 Self-Driving System up and running as soon a
    or in matrix form:
    **x**<sup>T</sup>C**x** = 0 
 
-## Overview of Steps for implementing ORBSlam: ##
+## Overview of Steps for implementing ORBSlam: #
  1. Get two images points, first image being **x** and next one being **x**'
  2. Extract features(keypoints) from  each image _u,v_, along with descriptors
 	of every point using ORB.
@@ -43,12 +56,14 @@ My final goal is to get a Level 2-3 Self-Driving System up and running as soon a
  5. Extract the Fundamental matrix **F**, using RANSAC to filter matches and the 8-point algorithm.
  6. Perform SVD on **F**, and find focal length values from s<sub>1</sub> and s<sub>1</sub> of matrix **S** (need to explore different method, currently unsure)
  7. Set the Intrinsic Matrix **K** using focal length and center point of pinhole (need to investigate further on using better methods, extracting focal length and getting intrinsic params.).
- 8. Repeat steps from 1-4, then normalize homogenoujs image points (x,y) -> (x,y,z) **x** and **x**' into **x^^** and **x^^**':
+ 8. Repeat steps from 1-4, then normalize homogenous image points _(x,y) -> (x,y,z)_ **x** and **x**' into **x^^** and **x^^**':
+
     **x^^** = **K**<sup>-1</sup>**x**
+
     **x^^**' = **K**<sup>-1</sup>**x**'
- 9. Find the Essential Matrix using _(x,y) from normalized coords**E**
+ 9. Find the Essential Matrix **E* *using _(x,y)__ from normalized coords 
  10. Perform Singular Value Decomposition on **E**
- 11. Extract Rotation and translation as demonstrated on page below:
-     https://en.wikipedia.org/wiki/Essential_matrix#Determining_R_and_t_from_E
- 12. And finally, extract 3d points as shown below:
-     https://en.wikipedia.org/wiki/Essential_matrix#3D_points_from_corresponding_image_points 
+ 11. Extract Rotation and translation as demonstrated here:
+     [Determining R and t from E](https://en.wikipedia.org/wiki/Essential_matrix#Determining_R_and_t_from_E)
+ 12. And finally, extract 3D points as shown here:
+     [3D points from image points](https://en.wikipedia.org/wiki/Essential_matrix#3D_points_from_corresponding_image_points)

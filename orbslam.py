@@ -294,7 +294,6 @@ def process_frame(img):
         R, t = EssentialtoRt(E)
         # R, t = None, None
         for p1, p2 in matches:
-            # NORMALIZE? -- ignore, just using this tag as a bookmark :|
             # u1, v1 = map(lambda x: int(round(x)), p1)
             # u2, v2 = map(lambda x: int(round(x)), p2)
             u1,v1 = f.denormalize(p1)
@@ -351,4 +350,3 @@ if __name__ == '__main__':
     main()
 else:
     print('you cannot import the script... skipping import')
-
