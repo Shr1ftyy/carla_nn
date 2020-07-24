@@ -1,5 +1,5 @@
 #!C:/Users/Syeam/AppData/Local/Programs/Python/Python37/python.exe
-# @author Syeam_Bin_Abdullah ------->  A script for playing around with Carla's API :D
+# @author Syeam_Bin_Abdullah 
 import glob
 import math
 import cv2

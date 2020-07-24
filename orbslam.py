@@ -56,14 +56,26 @@ edges = (
         (6,7),
         )
 
+def add_ones(x):
+  return np.concatenate([x, np.ones((x.shape[0], 1))], axis=1)
+
 class Extractor(object):
     def __init__(self, K):
-        self.orb = orb = cv2.ORB_create()
+        self.orb = orb = cv2.ORB_create(1000)
         self.last = None
         self.K = K
         self.Kinv = np.linalg.inv(K)
 
+    # def normalize(self, pts):
     def normalize(self, pts):
+        return np.dot(self.Kinv, add_ones(pts).T).T[:, 0:2]
+
+    def denormalize(self, pt):
+        ret = np.dot(self.K, np.array([pt[0], pt[1], 1.0]))
+        # print(ret)
+        #ret /= ret[2]
+        return int(round(ret[0])), int(round(ret[1]))
+
 
     def extract(self, img):
         """
@@ -89,12 +101,19 @@ class Extractor(object):
                     pts1.append(kp1)
                     pts2.append(kp2)
 
+            print(np.array(pts1).shape)
+            print(np.array(pts1)[:10])
+            pts1 = self.normalize(np.array(pts1))
+            print('norm')
+            print(pts1.shape)
+            print(pts1[:10])
+            pts2 = self.normalize(np.array(pts2))
             model, inliers = ransac((np.int32(pts1),
                 np.int32(pts2)),
                 EssentialMatrixTransform, 
                 # FundamentalMatrixTransform, 
                 min_samples=8,
-                residual_threshold=1, max_trials=100)
+                residual_threshold=0.1, max_trials=200)
             
             E = model.params
             pts1 = list(compress(pts1, inliers))
@@ -106,17 +125,18 @@ class Extractor(object):
 
         self.last = {'kps': kps, 'des': des}
        
-        return filterMatch, E 
+        return np.array(filterMatch), E 
 
 #Intrinsic Parameters
-foc = 20
+# foc = 20
+foc = 1
 H, W = np.split(cv2.imread(convFiles[0]+'.png', -1), 4)[0].shape[:-1]
 
 K = np.array([[foc,  0,W//2],
              [   0,foc,H//2],
              [   0,  0,   1]])
 
-f = Extractor()
+f = Extractor(K)
 
 f_est_avg = []
 
@@ -147,6 +167,8 @@ def EssentialtoRt(E):
     if np.sum(R.diagonal()) < 0:
         R = np.dot(np.dot(U, W.T), Vt)
     # Transformation Matrix
+    # print('ROTATION')
+    # print(R)
     t = np.dot(np.dot(np.dot(U,W),S), U.T)
     # t = np.dot(np.dot(U,Z), U.T)
 
@@ -157,8 +179,8 @@ def Compute3D(y,y_p,R,t):
     Compute 3D points from image points
     
     Parameters:
-    y - points from image 1
-    y_p - points from image 2
+    y - normalized points from image 1
+    y_p - normalized points from image 2
     R - rotation matrix
     t - translation matrix
 
@@ -184,6 +206,8 @@ def Compute3D(y,y_p,R,t):
     # print(y[:2].shape)
     x1_2 = x3*(y[:2])
 
+    # print("YO:")
+    # print((round(x1_2[0]*W), round(x1_2[1]*H), round(x3*H)))
     return (x1_2[0], x1_2[1], x3)
 
 def controls():
@@ -212,7 +236,7 @@ def controls():
 
 
 def render(pts, R, t):
-    global points
+    global points # Box of car LOL
     #Move car model around in 3D Space
     # print(R)
     # print(np.diag(t))
@@ -249,6 +273,7 @@ def render(pts, R, t):
 
     glBegin(GL_LINES)
 
+    #Draws box for car
     for edge in edges:
         for point in edge:
             glColor3d(0,1,0)
@@ -258,19 +283,25 @@ def render(pts, R, t):
 
 def process_frame(img):
     matches, E = f.extract(img)
-    pts = []
-    if matches == []:
+    # print('ESSENTIAL') 
+    # print(E) 
+    pts = [] 
+    if len(matches) < 1:
         return img, None, None, None
     else:
         # Perform Singular Value Decomposition on the current Essential matrix to derive rotation matrix R and transformation matrix T
         # print(np.linalg.det(E))
         R, t = EssentialtoRt(E)
+        # R, t = None, None
         for p1, p2 in matches:
-            u1, v1 = map(lambda x: int(round(x)), p1)
-            u2, v2 = map(lambda x: int(round(x)), p2)
+            # NORMALIZE? -- ignore, just using this tag as a bookmark :|
+            # u1, v1 = map(lambda x: int(round(x)), p1)
+            # u2, v2 = map(lambda x: int(round(x)), p2)
+            u1,v1 = f.denormalize(p1)
+            u2,v2 = f.denormalize(p2)
             cv2.circle(img, (u1, v1), color=(0,255,0),radius=1)
             cv2.line(img, (u1, v1),(u2, v2), color=(0,0,255))
-            # Compute 3D points from image points, rotation and translation
+            # Compute 3D points from image points, rotation and translation (normalized)
             pts.append(Compute3D([u1,v1], [u2,v2], R, t))
 
     return img, pts, R, t
@@ -291,21 +322,20 @@ def main():
         try:
             for image in convFiles:
                 img, pts, R, t = process_frame(np.split(cv2.imread(image+'.png', -1), 4)[0])
+                glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
                 if R is not None:
                     yeet = True
-                # print(R)
-                # print(t)
-                glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-                # car = np.array(points) 
-                # print(car)
-                # print(car.shape)
 
                 if yeet:
                     try:
                         render(pts, R, t)
                     except Exception as e: 
                         raise e
-
+                # print(R)
+                # print(t)
+                # car = np.array(points) 
+                # print(car)
+                # print(car.shape)
                 pygame.display.flip()
                 cv2.imshow('Preview - ORBSlam', img)
                 cv2.waitKey(1)

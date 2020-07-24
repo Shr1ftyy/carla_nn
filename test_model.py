@@ -13,7 +13,7 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 # Imports model
-from model import ResNet
+from model import ResNet, SegNet
 
 tf.executing_eagerly()
 gpu_options = tf.GPUOptions(allow_growth=True)
@@ -34,7 +34,6 @@ TODO:
     img = cv2.resize(img, (IMG_W, IMG_H))
     images.append(img)
     print(images[0].shape)
-    - Deploy the model train in realtime
 
 '''
 
@@ -103,8 +102,8 @@ for name in testNames:
 
 print('Loading Training Controls')
 
-# for line in controlFile:
-#    controls.append(line.split(','))
+for line in controlFile:
+   controls.append(line.split(','))
 
 controls.pop()
 controls = np.array(controls).astype('float32')
@@ -132,18 +131,16 @@ sc = MinMaxScaler(feature_range=(0, 1))
 # controls = np.asarray(controls).astype('float32')
 x_train = np.asarray(images)/255.0
 x_train = np.delete(x_train, len(x_train)-1, axis=0)
+print(x_train.shape)
+# sys.exit()
 
 x_test = np.asarray(testImages)/255.0
 x_test = np.delete(x_test, len(x_test)-1, axis=0)
 
 y_train = sc.fit_transform(np.asarray(controls))
 
-
-
-print(np.shape(x_test))
-
 # Prepare model for training
-model = ResNet((IMG_H, IMG_W))
+model = SegNet((IMG_H, IMG_W))
 
 model.compile(optimizer = 'adam', loss= 'mean_squared_error')
 

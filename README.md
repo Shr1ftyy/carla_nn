@@ -5,7 +5,7 @@
 - renderer.py - Radar point cloud visualization
 
 ## TODO: ##
-- Research on different ANN Architectures to use - currently thinking of using a VAE and Inception CNN with 
+- Research on different ANN Architectures to use 
 residual connections.
 - Implement LSTM after flattening (cnnLSTM)
 - Set up data trigger infrastructure - data collection for edge cases
@@ -33,3 +33,22 @@ My final goal is to get a Level 2-3 Self-Driving System up and running as soon a
    ax<sub>1</sub><sup>2</sup> + bx<sub>1</sub>x<sub>2</sub> + cx<sub>2</sub><sup>2</sup> + dx<sub>1</sub>x<sup>3</sup> + ex<sub>2</sub>x<sub>3</sub> + fx<sub>3</sub><sup>2</sup> = 0 (2.1)
    or in matrix form:
    **x**<sup>T</sup>C**x** = 0 
+
+## Overview of Steps for implementing ORBSlam: ##
+ 1. Get two images points, first image being **x** and next one being **x**'
+ 2. Extract features(keypoints) from  each image _u,v_, along with descriptors
+	of every point using ORB.
+ 3. Use KNN with point descriptors to match points from each image
+ 4. Filter out points using ratio test (distance from points) 
+ 5. Extract the Fundamental matrix **F**, using RANSAC to filter matches and the 8-point algorithm.
+ 6. Perform SVD on **F**, and find focal length values from s<sub>1</sub> and s<sub>1</sub> of matrix **S** (need to explore different method, currently unsure)
+ 7. Set the Intrinsic Matrix **K** using focal length and center point of pinhole (need to investigate further on using better methods, extracting focal length and getting intrinsic params.).
+ 8. Repeat steps from 1-4, then normalize homogenoujs image points (x,y) -> (x,y,z) **x** and **x**' into **x^^** and **x^^**':
+    **x^^** = **K**<sup>-1</sup>**x**
+    **x^^**' = **K**<sup>-1</sup>**x**'
+ 9. Find the Essential Matrix using _(x,y) from normalized coords**E**
+ 10. Perform Singular Value Decomposition on **E**
+ 11. Extract Rotation and translation as demonstrated on page below:
+     https://en.wikipedia.org/wiki/Essential_matrix#Determining_R_and_t_from_E
+ 12. And finally, extract 3d points as shown below:
+     https://en.wikipedia.org/wiki/Essential_matrix#3D_points_from_corresponding_image_points 
