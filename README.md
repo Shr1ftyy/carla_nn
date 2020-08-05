@@ -27,6 +27,11 @@
 # Goal:
 My final goal is to get a Level 2-3 Self-Driving System up and running, whilst also learning about relevant concepts
 
+# Preview: # 
+## Radar Visualization ##
+![radar](./imgs/radar.png)
+
+
 # NOTES #
 ## Multiple View Geometry in Computer Vision: ##
 ### Notation used in book: ###

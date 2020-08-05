@@ -128,8 +128,8 @@ class Extractor(object):
         return np.array(filterMatch), E 
 
 #Intrinsic Parameters
-# foc = 20
-foc = 1
+foc = 20
+# foc = 1
 H, W = np.split(cv2.imread(convFiles[0]+'.png', -1), 4)[0].shape[:-1]
 
 K = np.array([[foc,  0,W//2],
