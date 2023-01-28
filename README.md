@@ -1,5 +1,8 @@
 # Level 2-3 Autonomous Driving System - Using Carla #
 
+
+This repo is now archived, was a fun research project and I learnt a lot, but all good things must come to an end...
+
 - orbslam.py - toy implementation of monocular SLAM (ORBSlam) - INCOMPLETE
 - model.py - Neural Network Model - architecture needs improvement, is currently
   just a basic ResNet
